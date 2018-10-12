@@ -19,7 +19,7 @@
         "ParameterKey": "pPublicSubnet1CIDR",
         "ParameterValue": "10.240.0.0/20"
     },
-    {
+    {        
         "ParameterKey": "pPublicSubnet2CIDR",
         "ParameterValue": "10.240.16.0/20"
     },
@@ -50,5 +50,9 @@
     {
         "ParameterKey": "pDnsHostedZoneApexDomain",
         "ParameterValue": "underwoodpaul.com"
+    },
+    {
+        "ParameterKey": "pWebAccessCIDR",
+        "ParameterValue": "0.0.0.0/0"
     }  
 ]
