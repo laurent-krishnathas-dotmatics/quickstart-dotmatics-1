@@ -22,41 +22,89 @@ Metadata:
       - pDnsHostedZoneApexDomain
       - pLoadBalancerType
       - pSecurityGroupForWebAccess
+      - pBastionSecurityGroupID
       - pWebAccessCIDR
     - Label:
-        default: Amazon EC2 Configuration
+        default: Amazon EC2 App Server Configuration
       Parameters:
       - pEC2KeyPair
       - pAppServerInstanceType
     - Label:
-        default: Amazon RDS Configuration
+        default: Oracle Configuration - Amazon EC2
       Parameters:
-      - pDBName
-      - pDBUsername
-      - pDBPassword
-      - pDBInstanceType
-      - pDBMultiAZ
+      - pOracleInstanceType
+      - pPrimaryIPAddress
+      - pStandbyIPAddress
+    - Label:
+        default: Oracle Configuration - Oracle specific
+      Parameters:
+      - pDatabaseName
+      - pEBSData
+      - pEBSReco
+      - pDatabasePass
+      - pAsmPass
+      - pDataGuardConfig
+      - pInstallBucketName
+      - pInstallBucketPrefix
+    - Label:
+        default: Oracle Secure Backup Cloud Module (Optional)
+      Parameters:
+      - pOSBInstall
+      - pOSBOTN
+      - pOSBPass
+      - pOSBBucketName
+      - pOSBKey
+      - pOSBSecret
+    - Label:
+        default: AWS QuickStart Configuration
+      Parameters:
+      - QSS3BucketName
+      - QSS3KeyPrefix      
     ParameterLabels:
+      pBastionSecurityGroupID: 
+        default: Security Group to be giving access to SSH into App and DB server. AKA, Bastion Security Group.
+      pStandbyIPAddress:
+        default: Standby Database Private IP
+      pPrimaryIPAddress:
+        default: Primary Database Private IP
+      pOSBBucketName:
+        default: S3 Bucket for Backups
+      pOSBInstall:
+        default: Install Oracle Secure Backup
+      pOSBKey:
+        default: AWS Access Key ID
+      pOSBOTN:
+        default: OTN Account Email/Login
+      pOSBPass:
+        default: OTN Account Password
+      pOSBSecret:
+        default: AWS Secret Access Key
+      pOracleInstanceType:
+        default: Database Instance Type
+      pInstallBucketName:
+        default: Binaries Bucket Name
+      pInstallBucketPrefix:
+        default: Binaries Bucket Key Prefix
+      pDataGuardConfig:
+        default: Data Guard Configuration
       pAppServerInstanceType:
         default: App Server Instance Type
       pAppSubnetA:
         default: Application Subnet A
       pAppSubnetB:
         default: Application Subnet B
-      pDBInstanceType:
-        default: Database Instance Type
-      pDBMultiAZ:
-        default: Multi-AZ Amazon RDS
-      pDBName:
-        default: Database Name
-      pDBPassword:
-        default: Database Password
+      pDatabaseName:
+        default: Primary Database Name
       pDBSubnetA:
         default: Database Subnet A
       pDBSubnetB:
         default: Database Subnet B
-      pDBUsername:
-        default: Database User/Owner
+      pEBSData:
+        default: Data Diskgroup GiB/Disk
+      pEBSReco:
+        default: Recovery (Reco) Diskgroup GiB/Disk
+      pAsmPass:
+        default: ASM Password
       pDmzSubnetA:
         default: DMZ Subnet A
       pDmzSubnetB:
@@ -68,7 +116,7 @@ Metadata:
       pDNSName: 
         default: Dotmatics Server DNS Name
       pEC2KeyPair:
-        default: Key Pair for Dotmatics Server
+        default: Key Pair for Dotmatics Web and Database Server
       pLoadBalancerType:
         default: Load Balancer Type
       pSecurityGroupForWebAccess:
@@ -77,8 +125,123 @@ Metadata:
         default: VPC for Deployment
       pWebAccessCIDR:
         default: Web Access CIDR (No SG)
+      QSS3KeyPrefix:
+        default: Quick Start S3 Key Prefix
+      QSS3BucketName:
+        default: Quick Start S3 Bucket Name
        
 Parameters:
+  pStandbyIPAddress:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    ConstraintDescription: IP address parameter must be in the form x.x.x.x
+    Default: 10.0.32.5
+    Description: This must be a valid IP address for private subnet 2.
+    Type: String
+  pPrimaryIPAddress:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    ConstraintDescription: IP address parameter must be in the form x.x.x.x
+    Default: 10.0.0.5
+    Description: This must be a valid IP address for private subnet 1.
+    Type: String
+  pOSBBucketName:
+    ConstraintDescription: Enter your bucket name, must be an existing bucket.
+    Description: Name of your S3 bucket to store your Oracle backups.
+    Default: "override"
+    Type: String
+  pOSBInstall:
+    AllowedValues:
+    - 'true'
+    - 'false'
+    Default: 'false'
+    Description: Install (true) or don't install (false) optional Oracle Secure Backup.
+    Type: String
+  pOSBKey:
+    Description: The AWS Access Key to access your backup bucket, something like AKIAIV3KL4XXIT7DXXYY.
+    Type: String
+    Default: "override"
+  pOSBOTN:
+    Description: Your OTN (Oracle Technology Network) account login.
+    Type: String
+    Default: "override"
+  pOSBPass:
+    Description: Password of your OTN (Oracle Technology Network) account.
+    NoEcho: 'true'
+    Default: "override"
+    Type: String
+  pOSBSecret:
+    Description: The AWS Secret Key to access your backup bucket, something like c/ZeLyzixxx3HfxPVLX9IOKMXEdSbqks3Acz7QHj.
+    NoEcho: 'true'
+    Default: "override"
+    Type: String
+  pOracleInstanceType:
+    AllowedValues:
+    - t2.medium
+    - t2.large
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m4.10xlarge
+    - m4.16xlarge
+    - r3.large
+    - r3.xlarge
+    - r3.2xlarge
+    - r3.4xlarge
+    - r3.8xlarge
+    - r4.large
+    - r4.xlarge
+    - r4.2xlarge
+    - r4.4xlarge
+    - r4.8xlarge
+    - r4.16xlarge
+    - x1.16xlarge
+    - x1.32xlarge
+    ConstraintDescription: Must be a valid EC2 instance type.
+    Default: r3.2xlarge
+    Description: Choose your Oracle Database instance type.
+    Type: String
+  pInstallBucketName:
+    AllowedPattern: "^[0-9a-zA-Z-]+([0-9a-zA-Z-]+)*$"
+    ConstraintDescription: Bucket name can include numbers, lowercase letters, uppercase
+      letters, hyphens (-).
+    Description: Name of your S3 bucket with your Oracle Binaries (e.g., bucket-name)
+    Type: String
+  pInstallBucketPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$"
+    ConstraintDescription: Key prefix can include numbers, lowercase letters, uppercase
+      letters, hyphens (-), and forward slash (/). It cannot start or end with forward
+      slash (/) because they are automatically appended.
+    Description: Name of your S3 prefix with your Oracle Binaries (e.g., key/prefix)
+    Type: String
+    Default: oracle/database/12
+  pDatabaseName:
+    AllowedPattern: "([A-Za-z0-9-]{3,8})"
+    ConstraintDescription: No special chars, Min 3, Maximum of 8 characters.
+    Default: dotmtsdb
+    Description: Enter your Database Name, Min 3, Maximum of 8 characters (limited
+      by DB_NAME). Primary instance will have the same name of this.
+    Type: String
+  pDataGuardConfig:
+    AllowedValues:
+    - Data Guard
+    - Single
+    ConstraintDescription: Single - One instance only,  Data Guard - Two instances
+      (Primary + Standby)
+    Default: Data Guard
+    Description: 'Configuration: Single - One instance only,  Data Guard - Two instances
+      (Primary + Standby)'
+    Type: String
+  pAsmPass:
+    AllowedPattern: "([A-Za-z0-9_#$]{3,30})"
+    ConstraintDescription: Input your ASM Password, Min 3, Maximum of 30 characters.
+    Description: Enter your ASM Password, Min 3, maximum of 30 characters. This password
+      is used for the SYSASM, ASM Monitor, and ASM EM admin users of Oracle ASM.
+    NoEcho: 'true'
+    Type: String
   pDNSName:
     Description: The internal DNS CNAME to be used for the Dotmatics server. Leave the default if you are unsure of what this does.
     Type: String
@@ -103,46 +266,35 @@ Parameters:
   pAppSubnetB:
     Description: Production App Subnet B. Target subnet for the app server. 
     Type: AWS::EC2::Subnet::Id
-  pDBInstanceType:
-    Description: Database instance class. Default is db.t2.large.
+  pDatabasePass:
+    AllowedPattern: "([A-Za-z0-9_#$]{3,30})"
+    ConstraintDescription: Input your database Password, Min 3, Maximum of 30 characters.
+    Description: Enter your Database Password, Min 3, maximum of 30 characters. This
+      password is used for the SYS, SYSTEM, and DBSNMP users of Oracle Database.
+    NoEcho: 'true'
     Type: String
-    Default: t2.large
-    AllowedValues: 
-      - t2.medium
-      - t2.large
-      - t2.xlarge
-      - t2.2xlarge
-      - r4.large
-      - r4.xlarge
-      - r4.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-  pDBMultiAZ:
-    Description: Multi-AZ Amazon RDS Configuration. true/false - default is false.
-    Type: String
-    AllowedValues:
-    - "true"
-    - "false"
-    Default: "false"
-  pDBName:
-    Description: Dotmatics Database Name
-    Type: String
-    Default: Dotmatics
-  pDBPassword:
-    Description: Database User/Owner Password
-    Type: String
-    NoEcho: true
   pDBSubnetA:
     Description: Subnet ID for Production DB Subnet A.
     Type: AWS::EC2::Subnet::Id
   pDBSubnetB:
     Description: Subnet ID for Production DB Subnet B.
     Type: AWS::EC2::Subnet::Id
-  pDBUsername:
-    Description: Database User/Owner
-    Type: String
-    Default: mosaicowner
+  pEBSData:
+    ConstraintDescription: Must be a valid Number from 4 GiB to 16000 GiB
+    Default: '20'
+    Description: Enter the number of Gigabytes for Each ASM Disk (EBS) for DATA Diskgroup
+      total of 6 (six) volumes, maximum of 16000 GiB each.
+    MaxValue: '16000'
+    MinValue: '4'
+    Type: Number
+  pEBSReco:
+    ConstraintDescription: Must be a valid Number from 4 GiB to 16000 GiB
+    Default: '6'
+    Description: Enter the number of Gigabytes for Each ASM Disk (EBS) for RECO Diskgroup
+      total of 3 (three) volumes, maximum of 16000 GiB each.
+    MaxValue: '16000'
+    MinValue: '4'
+    Type: Number
   pDmzSubnetA:
     Description: Production DMZ Subnet A. Target subnet for the app server. 
     Type: AWS::EC2::Subnet::Id
@@ -166,10 +318,14 @@ Parameters:
     AllowedValues: 
       - internet-facing
       - internal
+  pBastionSecurityGroupID:
+    Description: Security group for ssh access
+    Default: ""
+    Type: String
   pSecurityGroupForWebAccess:
     Description: Security group for web access
-    Type: String
     Default: ""
+    Type: String
   pVpcId:
     Description: VPC ID
     Type: AWS::EC2::VPC::Id
@@ -177,6 +333,25 @@ Parameters:
     Description: Will only be used if Web Access Security Group is not specified. Enter 0.0.0.0/0 if you want to open it to the world.
     Type: String
     Default: "10.0.0.0/16"
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Default: aws-quickstart
+    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
+      can include numbers, lowercase letters, uppercase letters, and hyphens (-).
+      It cannot start or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and a forward slash (/) at the end of the prefix.
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Default: quickstart-dotmatics/
+    Type: String
 
 Mappings:
   AWSAMIRegionMap:
@@ -371,7 +546,6 @@ Resources:
           HttpCode: '200,401,302'
 
 
-
   ###
   ### Auto Scaling Group
   ###
@@ -393,23 +567,124 @@ Resources:
       HealthCheckGracePeriod: 900
       Tags:
         - Key: Name
-          Value: "Dotmatics AppServer"
+          Value: "Dotmatics App Server"
           PropagateAtLaunch: true
+          
+          
   rAutoScalingConfigApp:
     Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          MountConfig:
+          - setup
+          - mount
+        setup:
+          packages:
+            yum:
+              nfs-utils: []
+          files:
+            "/home/ec2-user/post_nfsstat":
+              content: !Sub |
+                #!/bin/bash
+
+                INPUT="$(cat)"
+                CW_JSON_OPEN='{ "Namespace": "EFS", "MetricData": [ '
+                CW_JSON_CLOSE=' ] }'
+                CW_JSON_METRIC=''
+                METRIC_COUNTER=0
+
+                for COL in 1 2 3 4 5 6; do
+
+                 COUNTER=0
+                 METRIC_FIELD=$COL
+                 DATA_FIELD=$(($COL+($COL-1)))
+
+                 while read line; do
+                   if [[ COUNTER -gt 0 ]]; then
+
+                     LINE=`echo $line | tr -s ' ' `
+                     AWS_COMMAND="aws cloudwatch put-metric-data --region ${AWS::Region}"
+                     MOD=$(( $COUNTER % 2))
+
+                     if [ $MOD -eq 1 ]; then
+                       METRIC_NAME=`echo $LINE | cut -d ' ' -f $METRIC_FIELD`
+                     else
+                       METRIC_VALUE=`echo $LINE | cut -d ' ' -f $DATA_FIELD`
+                     fi
+
+                     if [[ -n "$METRIC_NAME" && -n "$METRIC_VALUE" ]]; then
+                       INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+                       CW_JSON_METRIC="$CW_JSON_METRIC { \"MetricName\": \"$METRIC_NAME\", \"Dimensions\": [{\"Name\": \"InstanceId\", \"Value\": \"$INSTANCE_ID\"} ], \"Value\": $METRIC_VALUE },"
+                       unset METRIC_NAME
+                       unset METRIC_VALUE
+
+                       METRIC_COUNTER=$((METRIC_COUNTER+1))
+                       if [ $METRIC_COUNTER -eq 20 ]; then
+                         # 20 is max metric collection size, so we have to submit here
+                         aws cloudwatch put-metric-data --region ${AWS::Region} --cli-input-json "`echo $CW_JSON_OPEN ${!CW_JSON_METRIC%?} $CW_JSON_CLOSE`"
+
+                         # reset
+                         METRIC_COUNTER=0
+                         CW_JSON_METRIC=''
+                       fi
+                     fi
+
+
+
+                     COUNTER=$((COUNTER+1))
+                   fi
+
+                   if [[ "$line" == "Client nfs v4:" ]]; then
+                     # the next line is the good stuff
+                     COUNTER=$((COUNTER+1))
+                   fi
+                 done <<< "$INPUT"
+                done
+
+                # submit whatever is left
+                aws cloudwatch put-metric-data --region ${AWS::Region} --cli-input-json "`echo $CW_JSON_OPEN ${!CW_JSON_METRIC%?} $CW_JSON_CLOSE`"
+              mode: '000755'
+              owner: ec2-user
+              group: ec2-user
+            "/home/ec2-user/crontab":
+              content: "* * * * * /usr/sbin/nfsstat | /home/ec2-user/post_nfsstat\n"
+              owner: ec2-user
+              group: ec2-user
+          commands:
+            01_createdir:
+              command: !Sub "mkdir /efs"
+        mount:
+          commands:
+            01_mount:
+              command: !Sub >
+                mount -t nfs4 -o nfsvers=4.1 ${rFilesystem}.efs.${AWS::Region}.amazonaws.com:/ /efs
+            02_permissions:
+              command: !Sub "chown ec2-user:ec2-user /efs"
     DependsOn:
-    - rDatabaseInstance
+    - rOracleStack
     Properties:
+      IamInstanceProfile: !Ref rAppServerInstanceProfile
       ImageId: !FindInMap [ AWSAMIRegionMap, !Ref "AWS::Region", mAppServerAMI ]
       InstanceType: !Ref pAppServerInstanceType
       KeyName: !Ref pEC2KeyPair
       SecurityGroups:
       - !Ref rSecurityGroupAppServers
+      - !GetAtt rOracleStack.Outputs.OracleServerAccessSecurityGroup
       UserData:
         Fn::Base64: !Sub |
           #!/bin/sh
-          sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rDatabaseInstance.PrivateDnsName})(PORT\\=1521))(CONNECT_DATA\\=(SERVICE_NAME\\=PDBDOTM)) )/' /ebs/config/browser/browser.properties 
-          sed -i '/^db.server/s/=.*$/=${rDatabaseInstance.PrivateDnsName}/' /ebs/config/browser/browser.properties 
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfiguration --configsets MountConfig --region ${AWS::Region}
+          crontab /home/ec2-user/crontab
+          
+          
+          
+          sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=1521))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
+          sed -i '/^db.server/s/=.*$/=${rOracleStack.Outputs.PrivateDNSName}/' /ebs/config/browser/browser.properties 
+          sed -i '/^db.dba.password/s/=.*$/=${pDatabasePass}/' /ebs/config/browser/browser.properties
+          sed -i '/^db.sid/s/=.*$/=${pDatabaseName}/' /ebs/config/browser/browser.properties 
+          sed -i '/^updates.setting/s/=.*$/=new/' /ebs/config/browser/browser.properties 
           
           if [ '${pDnsHostedZoneID}' = '' ]
             then
@@ -420,33 +695,169 @@ Resources:
           
           sudo systemctl stop browser.service
           sudo systemctl start browser.service
+          
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
+
+  ###
+  ### App Server Roles
+  ###
+  
+  rAppServerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+  
+  rCloudWatchPutMetricsRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CloudWatch_PutMetricData
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: CloudWatchPutMetricData
+          Effect: Allow
+          Action:
+          - cloudwatch:PutMetricData
+          Resource:
+          - "*"
+      Roles: 
+      - !Ref rAppServerRole
+
+  rAppServerInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: rAppServerRole
+
+  ###
+  ### EFS
+  ###
+
+  rEfsMountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref rFilesystem
+      SubnetId: !Ref pAppSubnetA 
+      SecurityGroups:
+      - Ref: rEfsMountTargetSecurityGroup
+
+  rEfsMountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref rFilesystem
+      SubnetId: !Ref pAppSubnetB 
+      SecurityGroups:
+      - Ref: rEfsMountTargetSecurityGroup
+      
+  rEfsMountTargetSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref pVpcId
+      GroupDescription: Security group for Dotmatics app server mount target
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '2049'
+        ToPort: '2049'
+        SourceSecurityGroupId: !Ref rSecurityGroupAppServers    
+
+  rFilesystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      KmsKeyId: !GetAtt 
+        - rEfsKey
+        - Arn
+      FileSystemTags:
+      - Key: Name
+        Value: 'Dotmatics AppServer NFSv4'
+  rEfsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: dotmatics-efs-key
+        Statement:
+          - Sid: Allow administration of the key
+            Effect: Allow
+            Principal:
+              AWS: !Join 
+                - ''
+                - - 'arn:aws:iam::'
+                  - !Ref 'AWS::AccountId'
+                  - ':root'
+            Action:
+              - 'kms:*'
+            Resource: '*'
 
 
   ###
   ### DB Instance
   ###
   
-
-  rDatabaseInstance: 
-    Type: AWS::EC2::Instance
-    Properties: 
-      DisableApiTermination: true
-      InstanceType: !Ref pDBInstanceType
-      IamInstanceProfile: !Ref rDBServerProfile
-      KeyName: !Ref pEC2KeyPair
-      ImageId: !FindInMap [ AWSAMIRegionMap, !Ref "AWS::Region", mDbServerAMI ]  
-      NetworkInterfaces: 
-      - AssociatePublicIpAddress: false
-        DeviceIndex: 0
-        GroupSet: 
-          - !Ref rSecurityGroupDB
-        SubnetId: !Ref pDBSubnetA
-      Tags: 
-      - Key: Name
-        Value: "Dotmatics Oracle Database"
-      UserData: 
-        Fn::Base64: !Sub |
-          sudo systemctl start oracle.service
+  
+  rOracleStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-oracle-database/templates/oracle-database.template
+      Parameters:
+        OracleVersion: '12.2.0.1'
+        AsmPass: !Ref pAsmPass
+        BastionSecurityGroupID: !Ref pBastionSecurityGroupID
+        CharacterSet: 'AL32UTF8'
+        DataGuardConfig: !Ref pDataGuardConfig
+        DataIOPS: '0'
+        DataVolumeType: 'gp2'
+        DatabaseName: !Ref pDatabaseName
+        DatabasePass: !Ref pDatabasePass
+        DatabasePort: 1521
+        DomainName: 'dotmaticsdatabase'
+        EBSData: !Ref pEBSData
+        EBSReco: !Ref pEBSReco
+        InstallBucketName: !Ref pInstallBucketName
+        InstallBucketPrefix: !Ref pInstallBucketPrefix
+        KeyPairName: !Ref pEC2KeyPair
+        OracleAMIOS: 'Oracle-Linux-7.3-HVM'
+        OracleInstanceType: !Ref pOracleInstanceType
+        OSBBucketName: !Ref pOSBBucketName
+        OSBInstall: !Ref pOSBInstall
+        OSBKey: !Ref pOSBKey
+        OSBOTN: !Ref pOSBOTN
+        OSBPass: !Ref pOSBPass
+        OSBSecret: !Ref pOSBSecret
+        PrimaryIPAddress: !Ref pPrimaryIPAddress
+        PrivateSubnet1ID: !Ref pDBSubnetA
+        PrivateSubnet2ID: !Ref pDBSubnetB
+        RecoIOPS: '0'
+        RecoVolumeType: 'gp2'
+        StandbyIPAddress: !Ref pStandbyIPAddress
+        StandbyName: 'dotdbstby'
+        VPCID: !Ref pVpcId
+        EnableCWL: 'true'  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
    
   
   rDBServerRole: 
