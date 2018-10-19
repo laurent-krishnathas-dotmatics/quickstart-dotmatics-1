@@ -552,6 +552,9 @@ Resources:
   rAutoScalingGroupApp:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn: rAutoScalingConfigApp
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT30M
     Properties:
       AutoScalingGroupName: !Sub Dotmatics-ASG-${AWS::StackName}
       TargetGroupARNs:
@@ -584,7 +587,7 @@ Resources:
             yum:
               nfs-utils: []
           files:
-            "/home/ec2-user/post_nfsstat":
+            "/home/centos/post_nfsstat":
               content: !Sub |
                 #!/bin/bash
 
@@ -645,12 +648,12 @@ Resources:
                 # submit whatever is left
                 aws cloudwatch put-metric-data --region ${AWS::Region} --cli-input-json "`echo $CW_JSON_OPEN ${!CW_JSON_METRIC%?} $CW_JSON_CLOSE`"
               mode: '000755'
-              owner: ec2-user
-              group: ec2-user
+              owner: centos
+              group: centos
             "/home/ec2-user/crontab":
               content: "* * * * * /usr/sbin/nfsstat | /home/ec2-user/post_nfsstat\n"
-              owner: ec2-user
-              group: ec2-user
+              owner: centos
+              group: centos
           commands:
             01_createdir:
               command: !Sub "mkdir /efs"
@@ -660,7 +663,7 @@ Resources:
               command: !Sub >
                 mount -t nfs4 -o nfsvers=4.1 ${rFilesystem}.efs.${AWS::Region}.amazonaws.com:/ /efs
             02_permissions:
-              command: !Sub "chown ec2-user:ec2-user /efs"
+              command: !Sub "chown centos:centos /efs"
     DependsOn:
     - rOracleStack
     Properties:
@@ -674,29 +677,33 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/sh
-          yum install -y aws-cfn-bootstrap
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfiguration --configsets MountConfig --region ${AWS::Region}
+          
+          pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+          /usr/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets MountConfig --region ${AWS::Region}
           crontab /home/ec2-user/crontab
           
-          
-          
-          sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=1521))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
-          sed -i '/^db.server/s/=.*$/=${rOracleStack.Outputs.PrivateDNSName}/' /ebs/config/browser/browser.properties 
-          sed -i '/^db.dba.password/s/=.*$/=${pDatabasePass}/' /ebs/config/browser/browser.properties
-          sed -i '/^db.sid/s/=.*$/=${pDatabaseName}/' /ebs/config/browser/browser.properties 
-          sed -i '/^updates.setting/s/=.*$/=new/' /ebs/config/browser/browser.properties 
-          
-          if [ '${pDnsHostedZoneID}' = '' ]
-            then
-              sed -i '/^app.browserurl/s/=.*$/=${rApplicationLoadBalancer.DNSName}/' /ebs/config/browser/browser.properties 
-            else 
-              sed -i '/^app.browserurl/s/=.*$/=${pDNSName}.${pDnsHostedZoneApexDomain}/' /ebs/config/browser/browser.properties 
+          if [ ! -f '/efs/config/browser/browser.properties' ]
+          then
+              sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=1521))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
+              sed -i '/^db.server/s/=.*$/=${rOracleStack.Outputs.PrivateDNSName}/' /ebs/config/browser/browser.properties 
+              sed -i '/^db.dba.password/s/=.*$/=${pDatabasePass}/' /ebs/config/browser/browser.properties
+              sed -i '/^db.sid/s/=.*$/=${pDatabaseName}/' /ebs/config/browser/browser.properties 
+              sed -i '/^updates.setting/s/=.*$/=new/' /ebs/config/browser/browser.properties 
+              
+              if [ '${pDnsHostedZoneID}' = '' ]
+                then
+                  sed -i '/^app.browserurl/s/=.*$/=${rApplicationLoadBalancer.DNSName}/' /ebs/config/browser/browser.properties 
+                else 
+                  sed -i '/^app.browserurl/s/=.*$/=${pDNSName}.${pDnsHostedZoneApexDomain}/' /ebs/config/browser/browser.properties 
+              fi
+              
+              cp -R /ebs/config /efs/config/
           fi
           
           sudo systemctl stop browser.service
           sudo systemctl start browser.service
           
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
+          /usr/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingConfigApp --region ${AWS::Region}
 
   ###
   ### App Server Roles
@@ -844,42 +851,6 @@ Resources:
         EnableCWL: 'true'  
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-   
-  
-  rDBServerRole: 
-    Type: AWS::IAM::Role
-    Properties: 
-      AssumeRolePolicyDocument: 
-        Statement: 
-        - Effect: Allow
-          Principal:
-            Service: 
-            - ec2.amazonaws.com
-          Action: 
-          - sts:AssumeRole
-      Path: /
-  rDBServerProfile: 
-    DependsOn: 
-    - rDBServerRole
-    Type: AWS::IAM::InstanceProfile
-    Properties: 
-      Path: /
-      Roles: 
-      - !Ref rDBServerRole  
 
 Outputs:
   oLoadBalancerDNS:
