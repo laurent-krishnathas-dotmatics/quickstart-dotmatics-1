@@ -20,6 +20,7 @@ Metadata:
       - pDBSubnetB
       - pDnsHostedZoneID
       - pDnsHostedZoneApexDomain
+      - pCreateTLSCert
       - pLoadBalancerType
       - pSecurityGroupForWebAccess
       - pBastionSecurityGroupID
@@ -61,6 +62,8 @@ Metadata:
       - QSS3BucketName
       - QSS3KeyPrefix      
     ParameterLabels:
+      pCreateTLSCert:
+        default: Create a TLS Certificate for the Load Balancer?
       pBastionSecurityGroupID: 
         default: Security Group to be giving access to SSH into App and DB server. AKA, Bastion Security Group.
       pStandbyIPAddress:
@@ -131,6 +134,13 @@ Metadata:
         default: Quick Start S3 Bucket Name
        
 Parameters:
+  pCreateTLSCert:
+    AllowedValues:
+    - 'true'
+    - 'no'
+    Default: 'no'
+    Description: Do you want to create and associate a TLS certificate with the Application Load Balancer? This template performs domain validation as documented here - https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html
+    Type: String
   pStandbyIPAddress:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
     ConstraintDescription: IP address parameter must be in the form x.x.x.x
@@ -369,6 +379,7 @@ Conditions:
   cDNSRecord: !Not [ !Or [ !Equals [!Ref pDnsHostedZoneID, ""] , !Equals [!Ref pDnsHostedZoneApexDomain, ""] ] ]
   cWebAccessSG: !Not [ !Equals [ !Ref pSecurityGroupForWebAccess, "" ] ]
   cNoWebAccessSG: !Equals [ !Ref pSecurityGroupForWebAccess, "" ]
+  cCreateTLSCert: !Equals [ !Ref pCreateTLSCert, "true" ]
 Resources:
   # If a hosted zone is specified, create a DNS Record
   rDNSRecord:
@@ -385,7 +396,7 @@ Resources:
 
   rALBCertificate:
     Type: "AWS::CertificateManager::Certificate"
-    Condition: cDNSRecord
+    Condition: cCreateTLSCert
     Properties: 
       DomainName: !Sub ${pDNSName}.${pDnsHostedZoneApexDomain}
       DomainValidationOptions:
@@ -504,7 +515,7 @@ Resources:
       
   rLoadBalancerListenerHTTPS:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    Condition: cDNSRecord
+    Condition: cCreateTLSCert
     Properties:
         Certificates:
           - CertificateArn: !Ref rALBCertificate
@@ -697,12 +708,16 @@ Resources:
                   sed -i '/^app.browserurl/s/=.*$/=${pDNSName}.${pDnsHostedZoneApexDomain}/' /ebs/config/browser/browser.properties 
               fi
               
-              cp -R /ebs/config /efs/config/
+              cp -Rp /ebs/config /efs/config/
           fi
+          
+          sed -i 's/ebs/efs/g' /project/browser/docker/stack/browser/browser-production.yml
+          
           
           sudo systemctl stop browser.service
           sudo systemctl start browser.service
           
+
           /usr/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingConfigApp --region ${AWS::Region}
 
   ###
@@ -859,4 +874,8 @@ Outputs:
   oDNSUrl:
     Condition: cDNSRecord
     Description: URL to Load Balancer to access Dotmaics application.
+    Value: !Sub http://${pDNSName}.${pDnsHostedZoneApexDomain}/browser
+  oDNSUrlTLS:
+    Condition: pCreateTLSCert
+    Description: URL to Load Balancer to access Dotmaics application over TLS.
     Value: !Sub https://${pDNSName}.${pDnsHostedZoneApexDomain}/browser
