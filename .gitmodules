@@ -3,4 +3,4 @@
 	url = https://github.com/aws-quickstart/quickstart-aws-vpc
 [submodule "submodules/quickstart-oracle-database"]
 	path = submodules/quickstart-oracle-database
-	url = git@github.com:paulu-aws/quickstart-oracle-database.git
+	url = https://github.com/aws-quickstart/quickstart-oracle-database.git
