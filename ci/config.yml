@@ -2,7 +2,6 @@ global:
   marketplace-ami: false
   owner: quickstart-eng@amazon.com
   qsname: quickstart-dotmatics
-  s3bucket: paulu-hclscollab-taskcat-bucket
   regions:
     - eu-west-1
     - us-east-1
