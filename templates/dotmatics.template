@@ -876,6 +876,6 @@ Outputs:
     Description: URL to Load Balancer to access Dotmaics application.
     Value: !Sub http://${pDNSName}.${pDnsHostedZoneApexDomain}/browser
   oDNSUrlTLS:
-    Condition: pCreateTLSCert
+    Condition: cCreateTLSCert
     Description: URL to Load Balancer to access Dotmaics application over TLS.
     Value: !Sub https://${pDNSName}.${pDnsHostedZoneApexDomain}/browser

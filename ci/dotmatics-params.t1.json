@@ -5,7 +5,7 @@
     },
     {
         "ParameterKey": "pEC2KeyPair",
-        "ParameterValue": "paulu-hclscollab-taskcat"
+        "ParameterValue": "TestKeyPair"
     },
     {
         "ParameterKey": "pPrivateSubnet1CIDR",
@@ -28,31 +28,55 @@
         "ParameterValue": "10.240.0.0/16"
     },
     {
+        "ParameterKey": "pPrimaryIPAddress",
+        "ParameterValue": "10.240.32.5"
+    },
+    {
+        "ParameterKey": "pStandbyIPAddress",
+        "ParameterValue": "10.240.48.5"
+    },
+    {
         "ParameterKey": "QSS3BucketName",
-        "ParameterValue": "paulu-hclscollab-taskcat-bucket"
+        "ParameterValue": "taskcat-dotmatics-amjb"
     },
     {
         "ParameterKey": "QSS3KeyPrefix",
         "ParameterValue": "quickstart-dotmatics/"
     },
     {
-        "ParameterKey": "pDBName",
-        "ParameterValue": "dotmatics"
+        "ParameterKey": "pDatabasePass",
+        "ParameterValue": "Test1234#"
     },
     {
-        "ParameterKey": "pDBPassword",
-        "ParameterValue": "Test1234!#"
+        "ParameterKey": "pAsmPass",
+        "ParameterValue": "Test1234#"
     },
     {
         "ParameterKey": "pDnsHostedZoneID",
-        "ParameterValue": "Z4M3QOBWCZGZA"
+        "ParameterValue": "ZMUW8C7HW0SEE"
     },
     {
         "ParameterKey": "pDnsHostedZoneApexDomain",
-        "ParameterValue": "underwoodpaul.com"
+        "ParameterValue": "bostroma.be"
     },
     {
         "ParameterKey": "pWebAccessCIDR",
         "ParameterValue": "0.0.0.0/0"
-    }  
+    },
+    {
+        "ParameterKey": "pDataGuardConfig",
+        "ParameterValue": "Single"
+    },
+    {
+        "ParameterKey": "pInstallBucketName",
+        "ParameterValue": "devspacepaul"
+    },
+    {
+        "ParameterKey": "pInstallBucketPrefix",
+        "ParameterValue": "oraclebins"
+    },
+    {
+        "ParameterKey": "pOracleInstanceType",
+        "ParameterValue": "t2.large"
+    }
 ]
