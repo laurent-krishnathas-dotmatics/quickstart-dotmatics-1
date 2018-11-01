@@ -20,6 +20,7 @@ Metadata:
       - pDnsHostedZoneID
       - pDnsHostedZoneApexDomain
       - pLoadBalancerType
+      - pBastionSecurityGroupID
       - pSecurityGroupForWebAccess
       - pWebAccessCIDR
     - Label:
@@ -93,6 +94,8 @@ Metadata:
         default: Web Access Security Group
       pVPCCIDR:
         default: VPC CIDR  
+      pBastionSecurityGroupID: 
+        default: Security Group to be giving access to SSH into App and DB server. AKA, Bastion Security Group.
       pWebAccessCIDR:
         default: Web Access CIDR (No SG)
       QSS3KeyPrefix:
@@ -190,20 +193,24 @@ Parameters:
     Description: CIDR block for the public (DMZ) subnet 2 located in Availability
       Zone 2
     Type: String
+  pBastionSecurityGroupID:
+    Description: Security group for ssh access
+    Default: ""
+    Type: String    
   pSecurityGroupForWebAccess:
-    Description: Security group for web access. Default is empty string.
+    Description: Security group id for web access. If you leave this empty, you need to specify a CIDR range for the WebAccessCIDR parameter.
     Type: String
     Default: ""
-  pVPCCIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.0.0/16
-    Description: CIDR block for the VPC
-    Type: String
   pWebAccessCIDR:
     Description: Will only be used if Web Access Security Group is not specified. Enter 0.0.0.0/0 if you want to open it to the world.
     Type: String
-    Default: "10.0.0.0/16"
+    Default: "10.80.0.0/16"  
+  pVPCCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.80.0.0/16
+    Description: CIDR block for the VPC
+    Type: String
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
@@ -355,9 +362,11 @@ Parameters:
     Description: Enter your Database Name, Min 3, Maximum of 8 characters (limited
       by DB_NAME). Primary instance will have the same name of this.
     Type: String
+
 Conditions:
   cDNSRecord: !Not [ !Or [ !Equals [!Ref pDnsHostedZoneID, ""] , !Equals [!Ref pDnsHostedZoneApexDomain, ""] ] ]
   pOSBInstall: !Equals [!Ref pOSBInstall, "true"]
+  cBastionSGSupplied: !Not [!Equals [!Ref pBastionSecurityGroupID, '']]
 Resources:
   # Deploys a VPC in two availability zones with public and private subnets
   rVPCStack:
@@ -375,49 +384,22 @@ Resources:
         PublicSubnet2CIDR: !Ref pPublicSubnet2CIDR
         VPCCIDR: !Ref pVPCCIDR
 
-  # Deploys an ssh security group into the new VPC
-  BastionSecurityGroup:
+  rConditionalBastionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     DependsOn:
     - rVPCStack
     Properties:
-      GroupDescription: allow connections from specified CIDR ranges
+      GroupDescription: Security group for bastions to allow SSH access to Dotmatics
       VpcId: !GetAtt rVPCStack.Outputs.VPCID
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
-        CidrIp: 0.0.0.0/0
       Tags: 
       - Key: Name
         Value: sg-dotmatics-access-to-22
-
-  SecurityGroupForWebAccess:
-    Type: AWS::EC2::SecurityGroup
-    DependsOn:
-    - rVPCStack
-    Properties:
-      GroupDescription: allow connections from specified CIDR ranges
-      VpcId: !GetAtt rVPCStack.Outputs.VPCID
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 443
-        ToPort: 443
-        CidrIp: 0.0.0.0/0
-      Tags: 
-      - Key: Name
-        Value: sg-dotmatics-access-to-80-443
 
   # Deploys Dotmics into the VPC that was just created
   rDotmatics:
     Type: AWS::CloudFormation::Stack
     DependsOn:
     - rVPCStack
-    - BastionSecurityGroup
     Properties:
       TemplateURL: !Sub https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/dotmatics.template
       Parameters:
@@ -470,8 +452,8 @@ Resources:
         pDnsHostedZoneID: !Ref pDnsHostedZoneID
         pEC2KeyPair: !Ref pEC2KeyPair
         pLoadBalancerType: !Ref pLoadBalancerType
-        pBastionSecurityGroupID: !GetAtt BastionSecurityGroup.GroupId
-        pSecurityGroupForWebAccess: !GetAtt SecurityGroupForWebAccess.GroupId
+        pBastionSecurityGroupID: !If [cBastionSGSupplied, !Ref pBastionSecurityGroupID , !Ref rConditionalBastionSecurityGroup]
+        pSecurityGroupForWebAccess: !Ref pSecurityGroupForWebAccess
         pVpcId: !GetAtt rVPCStack.Outputs.VPCID
         pWebAccessCIDR: !Ref pWebAccessCIDR
         QSS3BucketName: !Ref QSS3BucketName
