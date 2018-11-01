@@ -5,39 +5,39 @@
     },
     {
         "ParameterKey": "pEC2KeyPair",
-        "ParameterValue": "TestKeyPair"
+        "ParameterValue": "paulu-hclscollab-taskcat"
     },
     {
         "ParameterKey": "pPrivateSubnet1CIDR",
-        "ParameterValue": "10.240.32.0/20"
+        "ParameterValue": "10.80.32.0/20"
     },
     {
         "ParameterKey": "pPrivateSubnet2CIDR",
-        "ParameterValue": "10.240.48.0/20"
+        "ParameterValue": "10.80.48.0/20"
     },
     {
         "ParameterKey": "pPublicSubnet1CIDR",
-        "ParameterValue": "10.240.0.0/20"
+        "ParameterValue": "10.80.0.0/20"
     },
     {        
         "ParameterKey": "pPublicSubnet2CIDR",
-        "ParameterValue": "10.240.16.0/20"
+        "ParameterValue": "10.80.16.0/20"
     },
     {
         "ParameterKey": "pVPCCIDR",
-        "ParameterValue": "10.240.0.0/16"
+        "ParameterValue": "10.80.0.0/16"
     },
     {
         "ParameterKey": "pPrimaryIPAddress",
-        "ParameterValue": "10.240.32.5"
+        "ParameterValue": "10.80.32.5"
     },
     {
         "ParameterKey": "pStandbyIPAddress",
-        "ParameterValue": "10.240.48.5"
+        "ParameterValue": "10.80.48.5"
     },
     {
         "ParameterKey": "QSS3BucketName",
-        "ParameterValue": "taskcat-dotmatics-amjb"
+        "ParameterValue": "paulu-hclscollab-taskcat-bucket"
     },
     {
         "ParameterKey": "QSS3KeyPrefix",
@@ -50,14 +50,6 @@
     {
         "ParameterKey": "pAsmPass",
         "ParameterValue": "Test1234#"
-    },
-    {
-        "ParameterKey": "pDnsHostedZoneID",
-        "ParameterValue": "ZMUW8C7HW0SEE"
-    },
-    {
-        "ParameterKey": "pDnsHostedZoneApexDomain",
-        "ParameterValue": "bostroma.be"
     },
     {
         "ParameterKey": "pWebAccessCIDR",
