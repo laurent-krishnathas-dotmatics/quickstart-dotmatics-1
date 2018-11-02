@@ -336,13 +336,13 @@ Parameters:
     Description: Security group for web access
     Default: ""
     Type: String
-  pVpcId:
-    Description: VPC ID
-    Type: AWS::EC2::VPC::Id
   pWebAccessCIDR:
     Description: Will only be used if Web Access Security Group is not specified. Enter 0.0.0.0/0 if you want to open it to the world.
     Type: String
-    Default: "10.0.0.0/16"
+    Default: "10.0.0.0/16"    
+  pVpcId:
+    Description: VPC ID
+    Type: AWS::EC2::VPC::Id
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
@@ -597,6 +597,7 @@ Resources:
           packages:
             yum:
               nfs-utils: []
+              unzip: []
           files:
             "/home/centos/post_nfsstat":
               content: !Sub |
@@ -684,6 +685,7 @@ Resources:
       KeyName: !Ref pEC2KeyPair
       SecurityGroups:
       - !Ref rSecurityGroupAppServers
+      - !Ref pBastionSecurityGroupID
       - !GetAtt rOracleStack.Outputs.OracleServerAccessSecurityGroup
       UserData:
         Fn::Base64: !Sub |
@@ -692,7 +694,7 @@ Resources:
           pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
           /usr/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets MountConfig --region ${AWS::Region}
           crontab /home/ec2-user/crontab
-          
+      
           if [ ! -f '/efs/config/browser/browser.properties' ]
           then
               sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=1521))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
@@ -718,7 +720,7 @@ Resources:
           sudo systemctl start browser.service
           
 
-          /usr/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingConfigApp --region ${AWS::Region}
+          /usr/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
 
   ###
   ### App Server Roles
@@ -876,6 +878,6 @@ Outputs:
     Description: URL to Load Balancer to access Dotmaics application.
     Value: !Sub http://${pDNSName}.${pDnsHostedZoneApexDomain}/browser
   oDNSUrlTLS:
-    Condition: cCreateTLSCert
+    Condition: pCreateTLSCert
     Description: URL to Load Balancer to access Dotmaics application over TLS.
     Value: !Sub https://${pDNSName}.${pDnsHostedZoneApexDomain}/browser
