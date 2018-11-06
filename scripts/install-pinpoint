@@ -1,0 +1,208 @@
+#!/bin/bash
+
+# Author Oliver Streek
+# Version 1.0 (25 October 2018)
+
+set -e
+
+print_usage() {
+  echo 'Dotmatics Pinpoint installation script for 64 bit Linux'
+  echo ''
+  echo "Usage: $0 [-options] pinpoint-distribution pinpoint-license"
+  echo ''
+  echo '  options:'
+  echo '    -o oracle-home       The Oracle home directory. Not required if ORACLE_HOME is set.'
+  echo '    -p pdb-name          The Pluggable Database Name. Required if Oracle is installed in CDB mode.'
+  echo '    -h                   Display this help text.'
+  echo ''
+  echo '  pinpoint-distribution  The location of the Pinpoint distribution (zip file), as downloaded from support site.'
+  echo '  pinpoint-license       The location of the Pinpoint license, as downloaded from support site.'
+  echo ''
+  echo 'This script installs pinpoint on 64 bit Linux. It requires the Pinpoint distribution and license to be'
+  echo 'downloaded from the Dotmatics Support site. Do not unzip the Pinpoint distribution.'
+  echo ''
+  echo 'This script should be run as a user with permissions to connect to the database as sysdba. You can test this'
+  echo 'by running "sqlplus / as sysdba".'
+  echo ''
+  echo 'unzip must be installed on the system.'
+  echo ''
+  echo 'If your database is installed in multitenant (CDB) mode, you must pass the PDB name using the -p option.'
+  echo 'Installation will fail otherwise. However, if installation fails for this reason re-running the script'
+  echo 'specifying the PDB name should result in a successful installation.'
+  echo ''
+  echo 'Normally the ORACLE_HOME environment variable will be set. If not, pass the location of Oracle home using the'
+  echo '-o option. Note however that sqlplus may not work if ORACLE_HOME is not set. Please test this if ORACLE_HOME'
+  echo 'is not set.'
+  echo ''
+}
+
+get_and_test_command_line_arguments() {
+  if [ $# -eq 0 ]; then
+    print_usage
+    exit 1
+  fi
+
+  while getopts ":o:p:" opt; do
+    case "${opt}" in
+      h)
+        print_usage
+        exit 0
+        ;;
+      p)
+        pdb=${OPTARG}
+        ;;
+      o)
+        oracle_home_arg=${OPTARG}
+        ;;
+      *)
+        print_usage
+        exit 1
+        ;;
+    esac
+  done
+
+  shift $(($OPTIND -1))
+
+  if [ $# -ne 2 ]; then
+    print_usage
+    exit 1
+  fi
+
+  pinpoint_distribution=$1
+  pinpoint_license=$2
+
+  if [ -z "$oracle_home_arg" ]; then
+    oracle_home=$ORACLE_HOME
+  else
+    oracle_home="${oracle_home_arg}"
+  fi
+
+  if [ -z "$oracle_home" ]; then
+    echo >&2 "$0: Oracle home not found from \$ORACLE_HOME environment variable or -o argument"
+    exit 1
+  fi
+
+  if [ ! -f ${pinpoint_distribution} ]; then
+    echo >&2 $0: pinpoint-distribution not found!
+    exit 1
+  fi
+
+  if [ ! -f ${pinpoint_license} ]; then
+    echo >&2 $0: pinpoint-license not found!
+    exit 1
+  fi
+
+  if [ ! -d ${oracle_home} ]; then
+    echo >&2 $0: oracle-home not found!
+    exit 1
+  fi
+}
+
+check_prerequisites() {
+  if [ ! -d ${oracle_home}/lib ]; then
+    echo >&2 "$0: oracle lib directory not found!"
+    exit 1
+  fi
+
+  # Test the connection to the database.
+  if (! echo "select concat('pinpoint-installation-', 'connection-test') as test from dual;" | ${oracle_home}/bin/sqlplus -S -L / as sysdba | grep -Fq pinpoint-installation-connection-test); then
+    >&2 echo 'The installation script was unable to connect to the database as sysdba. Installation was not attempted.'
+    >&2 echo 'Please check that the database is running, that sqlplus is installed, and that you are running this script as the correct user.'
+    exit 1
+  fi
+
+  # TODO would be good to check that a PDB name has been passed if the database is in CDB mode. The script will fail if not.
+  # TODO would be good to check that pinpoint isn't already installed, or partly installed.
+}
+
+create_temp_dir() {
+  tmp_dir=`mktemp -d`
+  if [ $? -ne 0 ]; then
+    echo >&2 "$0: Can't create temp dir!"
+    exit 1
+  fi
+
+  pinpoint_dir=${tmp_dir}/pinpoint
+}
+
+customise_pinpoint_sql_and_move_library() {
+  unzip -q ${pinpoint_distribution} -d ${pinpoint_dir}
+
+  # Delete the Windows libraries and the 32 bit Linux library.
+  rm ${pinpoint_dir}/libpinpoint/*.dll
+  rm ${pinpoint_dir}/libpinpoint/*lnx_32*.so
+
+  # Get the name of the one remaining library - the 64 bit linux version.
+  pinpoint_library=$(cd ${pinpoint_dir}/libpinpoint && ls *lnx_64*.so)
+
+  # Delete the license sql and replace with a custom sql file created from the license file provided.
+  rm ${pinpoint_dir}/sql/create_license.sql
+  sed "s~*.*~~;s~delete.*~create table options (name varchar2(1000), value varchar2(1000));~" ${pinpoint_license} >> ${pinpoint_dir}/sql/create_license.sql
+
+  # Change the create_pinpoint_library.sql file to have the correct path to the library.
+  sed "s~as~as '$oracle_home/lib/$pinpoint_library'~;2d;3d" -i ${pinpoint_dir}/sql/create_pinpoint_library.sql
+
+  # If we're in CDB mode modify setup.sql and create_pinpoint_user.sql
+  if [ ! ${pdb} = "" ]; then
+      sed -e "s~connect.*~connect c\$pinpoint/pinpoint@127.0.0.1/${pdb}~" -i ${pinpoint_dir}/sql/setup.sql
+      sed -e "/create user.*/ialter session set container=${pdb};" -i ${pinpoint_dir}/sql/create_pinpoint_user.sql
+  fi
+
+  # Move the pinpoint library to the correct location.
+  mv -f ${pinpoint_dir}/libpinpoint/${pinpoint_library} ${oracle_home}/lib
+}
+
+run_installation_sql() {
+  (cd ${pinpoint_dir}/sql && ${oracle_home}/bin/sqlplus -S -L / as sysdba @setup.sql)
+}
+
+test_installation() {
+  # Test the installation by creating a test sql file in the temp dir, which connects as the pinpoint user
+  # and runs one of the standard pinpoint tests. This test is wrapped in a case statement to allow for easy
+  # grepping of the result, and split into a concat statement so if the sql is returned as part of an error
+  # message it doesn't contain the text we're looking for. Note that this test is against the test table, not
+  # dual, as this tests more of the pinpoint functionality.
+  test_sql="${pinpoint_dir}/sql/test_installation.sql"
+  local connect_line
+  if [ -z ${pdb} ]; then
+    connect_line="connect c\$pinpoint/pinpoint"
+  else
+    connect_line="connect c\$pinpoint/pinpoint@127.0.0.1/${pdb}"
+  fi
+  cat << EOF > "${test_sql}"
+${connect_line}
+set heading off;
+select concat('pinpoint-test-', case when (select count(*) from test where acc_contains(smiles, 'c1ncccc1') = 1)=3 then 'passed' else 'failed' end) as test from dual;
+exit;
+EOF
+  if (${oracle_home}/bin/sqlplus -S -L / as sysdba @"${test_sql}" | grep -Fq pinpoint-test-passed); then
+    echo ' ***************************************'
+    echo ' *                                     *'
+    echo ' * Pinpoint was installed successfully *'
+    echo ' *                                     *'
+    echo ' ***************************************'
+  else
+    >&2 echo ' ************************************************************'
+    >&2 echo ' *                                                          *'
+    >&2 echo ' * An error occurred - Pinpoint failed to install correctly *'
+    >&2 echo ' *                                                          *'
+    >&2 echo ' ************************************************************'
+  fi
+  echo ''
+}
+
+remove_temp_dir() {
+  rm -rf "${tmp_dir}"
+}
+
+main() {
+  get_and_test_command_line_arguments "$@"
+  check_prerequisites
+  create_temp_dir
+  customise_pinpoint_sql_and_move_library
+  run_installation_sql
+  test_installation
+  remove_temp_dir
+}
+
+main "$@"
