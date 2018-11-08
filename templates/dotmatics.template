@@ -828,7 +828,7 @@ Resources:
   ###
   
   ### Pinpoint Install SSM Command Doc
-  
+  ### Note that the oracle quickstart, on which the association depends, grants access to the QSS3BucketName/QSS3KeyPrefix bucket to download the required files.
   pInstallPinpointCommandDoc: 
     Type: "AWS::SSM::Document"
     Properties: 
@@ -849,8 +849,13 @@ Resources:
             properties:
             - id: 0.aws:runShellScript
               runCommand: 
-              - !Sub 'aws s3 sync . s3://${QSS3BucketName}/${QSS3KeyPrefix}/scripts/'
-              - 'sh install-pinpoint pinpoint_2.4_38010.zip dotmatics.pinpoint.license'
+              - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/dotmatics.pinpoint.license.txt  /home/oracle/dotmatics.pinpoint.license.txt'"
+              - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/pinpoint_2.4_38010.zip  /home/oracle/pinpoint_2.4_38010.zip'"
+              - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/install-pinpoint /home/oracle/install-pinpoint'"
+              - "su - oracle -c 'export ORACLE_HOME=/u01/app/oracle/product/12c/db_1'"
+              - "su - oracle -c 'export PATH=/u01/app/oracle/product/12c/db_1/bin:$PATH'"
+              - !Sub "su - oracle -c 'export ORACLE_SID=${pDatabaseName}'"
+              - "su - oracle -c 'sh /home/oracle/install-pinpoint /home/oracle/pinpoint_2.4_38010.zip /home/oracle/dotmatics.pinpoint.license.txt'"
               timeoutSeconds: "{{ executionTimeout }}"
 
   rPinpointInstallSSmDocAssociation:
@@ -859,7 +864,7 @@ Resources:
     Properties:
       Name: !Ref pInstallPinpointCommandDoc
       Parameters:
-        executionTimeout: '3600'
+        executionTimeout: ['3600']
       Targets:
       - Key: InstanceIds
         Values: [!GetAtt rOracleStack.Outputs.PrimaryInstanceID]
