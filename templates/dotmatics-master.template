@@ -68,8 +68,10 @@ Metadata:
         default: Multi-AZ Amazon RDS
       pDBName:
         default: Database Name
-      pDBPassword:
-        default: Database Password
+      pDatabasePass:
+        default: Database Password for Dotmatics
+      pAsmPass:
+        default: Database Password Oracle ASM
       pDBUsername:
         default: Database User/Owner
       pDnsHostedZoneApexDomain:

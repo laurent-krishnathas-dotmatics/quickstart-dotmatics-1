@@ -23,7 +23,6 @@ Metadata:
       - pCreateTLSCert
       - pLoadBalancerType
       - pSecurityGroupForWebAccess
-      - pBastionSecurityGroupID
       - pWebAccessCIDR
     - Label:
         default: Amazon EC2 App Server Configuration
@@ -64,8 +63,6 @@ Metadata:
     ParameterLabels:
       pCreateTLSCert:
         default: Create a TLS Certificate for the Load Balancer?
-      pBastionSecurityGroupID: 
-        default: Security Group to be giving access to SSH into App and DB server. AKA, Bastion Security Group.
       pStandbyIPAddress:
         default: Standby Database Private IP
       pPrimaryIPAddress:
@@ -328,10 +325,6 @@ Parameters:
     AllowedValues: 
       - internet-facing
       - internal
-  pBastionSecurityGroupID:
-    Description: Security group for ssh access
-    Default: ""
-    Type: String
   pSecurityGroupForWebAccess:
     Description: Security group for web access
     Default: ""
@@ -584,6 +577,14 @@ Resources:
           Value: "Dotmatics App Server"
           PropagateAtLaunch: true
           
+  rBastionSecurityGroupToOracleServer:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for bastions to allow SSH access to Dotmatics.
+      VpcId: !Ref pVpcId
+      Tags: 
+      - Key: Name
+        Value: sg-dotmatics-access-to-22        
           
   rAutoScalingConfigApp:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -685,7 +686,6 @@ Resources:
       KeyName: !Ref pEC2KeyPair
       SecurityGroups:
       - !Ref rSecurityGroupAppServers
-      - !Ref pBastionSecurityGroupID
       - !GetAtt rOracleStack.Outputs.OracleServerAccessSecurityGroup
       UserData:
         Fn::Base64: !Sub |
@@ -876,7 +876,7 @@ Resources:
       Parameters:
         OracleVersion: '12.2.0.1'
         AsmPass: !Ref pAsmPass
-        BastionSecurityGroupID: !Ref pBastionSecurityGroupID
+        BastionSecurityGroupID: !Ref rBastionSecurityGroupToOracleServer
         CharacterSet: 'AL32UTF8'
         DataGuardConfig: !Ref pDataGuardConfig
         DataIOPS: '0'
