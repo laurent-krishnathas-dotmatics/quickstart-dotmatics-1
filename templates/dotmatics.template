@@ -360,13 +360,10 @@ Mappings:
   AWSAMIRegionMap:
     us-east-1:
       mAppServerAMI: ami-XXXXXXXXXXX
-      mDbServerAMI: ami-XXXXXXXXXXX
     us-west-2:
       mAppServerAMI: ami-XXXXXXXXXXX
-      mDbServerAMI: ami-XXXXXXXXXXX
     eu-west-1:
-      mAppServerAMI: ami-0f504c691c15fa25a 
-      mDbServerAMI: ami-0c1e590729f5ae76a
+      mAppServerAMI: ami-037832e23d345b2d7 
 
 Conditions:
   cDNSRecord: !Not [ !Or [ !Equals [!Ref pDnsHostedZoneID, ""] , !Equals [!Ref pDnsHostedZoneApexDomain, ""] ] ]
@@ -691,6 +688,9 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/sh
           
+          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+          python get-pip.py
+          
           pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
           /usr/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets MountConfig --region ${AWS::Region}
           crontab /home/ec2-user/crontab
@@ -716,9 +716,12 @@ Resources:
           sed -i 's/ebs/efs/g' /project/browser/docker/stack/browser/browser-production.yml
           
           
-          sudo systemctl stop browser.service
-          sudo systemctl start browser.service
+          systemctl stop browser.service
+          systemctl start browser.service
           
+          yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+          systemctl enable amazon-ssm-agent
+          systemctl start amazon-ssm-agent
 
           /usr/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
 
@@ -729,6 +732,7 @@ Resources:
   rAppServerRole:
     Type: AWS::IAM::Role
     Properties:
+      ManagedPolicyArns: ["arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"]
       AssumeRolePolicyDocument:
         Statement:
         - Effect: Allow
