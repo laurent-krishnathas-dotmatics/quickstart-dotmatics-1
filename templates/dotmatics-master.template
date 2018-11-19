@@ -44,9 +44,6 @@ Metadata:
       - pDataGuardConfig
       - pInstallBucketName
       - pInstallBucketPrefix
-    - Label:
-        default: Oracle Configuration - Amazon EC2
-      Parameters:
       - pOracleInstanceType
       - pPrimaryIPAddress
       - pStandbyIPAddress
@@ -109,7 +106,7 @@ Metadata:
       pInstallBucketPrefix:
         default: Binaries Bucket Key Prefix
       pStandbyIPAddress:
-        default: Standby Database Private IP
+        default: Standby Database Private IP (only required if using Oracle DataGuard)
       pPrimaryIPAddress:
         default: Primary Database Private IP
       pOracleInstanceType:
@@ -157,7 +154,7 @@ Parameters:
     Type: String
     Default: ""
   pDNSName:
-    Description: The internal DNS CNAME to be used for the Dotmatics server. Leave the default if you are unsure of what this does.
+    Description: (Optional) The internal DNS CNAME to be used for the Dotmatics server. Leave the default if you are unsure of what this does.
     Type: String
     Default: dotmatics
   pEC2KeyPair:
@@ -255,6 +252,8 @@ Parameters:
       password is used for the SYS, SYSTEM, and DBSNMP users of Oracle Database.
     NoEcho: 'true'
     Type: String
+    MinLength: 3
+    MaxLength: 30
   pAsmPass:
     AllowedPattern: "([A-Za-z0-9_#$]{3,30})"
     ConstraintDescription: Input your ASM Password, Min 3, Maximum of 30 characters.
@@ -262,6 +261,8 @@ Parameters:
       is used for the SYSASM, ASM Monitor, and ASM EM admin users of Oracle ASM.
     NoEcho: 'true'
     Type: String
+    MinLength: 3
+    MaxLength: 30
   pDataGuardConfig:
     AllowedValues:
     - Data Guard
@@ -319,7 +320,7 @@ Parameters:
     Type: String
   pStandbyIPAddress:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    ConstraintDescription: IP address parameter must be in the form x.x.x.x
+    ConstraintDescription: IP address parameter must be in the form x.x.x.x. Only required if you are using Oracle DataGuard.
     Description: This must be a valid IP address for private subnet 2.
     Type: String
   pPrimaryIPAddress:
@@ -368,7 +369,6 @@ Parameters:
 Conditions:
   cDNSRecord: !Not [ !Or [ !Equals [!Ref pDnsHostedZoneID, ""] , !Equals [!Ref pDnsHostedZoneApexDomain, ""] ] ]
   pOSBInstall: !Equals [!Ref pOSBInstall, "true"]
-  cBastionSGSupplied: !Not [!Equals [!Ref pBastionSecurityGroupID, '']]
 Resources:
   # Deploys a VPC in two availability zones with public and private subnets
   rVPCStack:
@@ -385,17 +385,6 @@ Resources:
         PublicSubnet1CIDR: !Ref pPublicSubnet1CIDR
         PublicSubnet2CIDR: !Ref pPublicSubnet2CIDR
         VPCCIDR: !Ref pVPCCIDR
-
-  rConditionalBastionSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    DependsOn:
-    - rVPCStack
-    Properties:
-      GroupDescription: Security group for bastions to allow SSH access to Dotmatics
-      VpcId: !GetAtt rVPCStack.Outputs.VPCID
-      Tags: 
-      - Key: Name
-        Value: sg-dotmatics-access-to-22
 
   # Deploys Dotmics into the VPC that was just created
   rDotmatics:
@@ -454,7 +443,7 @@ Resources:
         pDnsHostedZoneID: !Ref pDnsHostedZoneID
         pEC2KeyPair: !Ref pEC2KeyPair
         pLoadBalancerType: !Ref pLoadBalancerType
-        pBastionSecurityGroupID: !If [cBastionSGSupplied, !Ref pBastionSecurityGroupID , !Ref rConditionalBastionSecurityGroup]
+        pBastionSecurityGroupID: !Ref pBastionSecurityGroupID
         pSecurityGroupForWebAccess: !Ref pSecurityGroupForWebAccess
         pVpcId: !GetAtt rVPCStack.Outputs.VPCID
         pWebAccessCIDR: !Ref pWebAccessCIDR
