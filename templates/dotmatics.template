@@ -32,8 +32,6 @@ Metadata:
         default: Oracle Configuration - Oracle specific
       Parameters:
       - pDatabaseName
-      - pEBSData
-      - pEBSReco
       - pDatabasePass
       - pAsmPass
       - pDataGuardConfig
@@ -95,10 +93,6 @@ Metadata:
         default: Database Subnet A
       pDBSubnetB:
         default: Database Subnet B
-      pEBSData:
-        default: Data Diskgroup GiB/Disk
-      pEBSReco:
-        default: Recovery (Reco) Diskgroup GiB/Disk
       pAsmPass:
         default: ASM Password
       pDmzSubnetA:
@@ -286,22 +280,6 @@ Parameters:
   pDBSubnetB:
     Description: Subnet ID for Production DB Subnet B.
     Type: AWS::EC2::Subnet::Id
-  pEBSData:
-    ConstraintDescription: Must be a valid Number from 4 GiB to 16000 GiB
-    Default: '20'
-    Description: Enter the number of Gigabytes for Each ASM Disk (EBS) for DATA Diskgroup
-      total of 6 (six) volumes, maximum of 16000 GiB each.
-    MaxValue: '16000'
-    MinValue: '4'
-    Type: Number
-  pEBSReco:
-    ConstraintDescription: Must be a valid Number from 4 GiB to 16000 GiB
-    Default: '6'
-    Description: Enter the number of Gigabytes for Each ASM Disk (EBS) for RECO Diskgroup
-      total of 3 (three) volumes, maximum of 16000 GiB each.
-    MaxValue: '16000'
-    MinValue: '4'
-    Type: Number
   pDmzSubnetA:
     Description: Production DMZ Subnet A. Target subnet for the app server. 
     Type: AWS::EC2::Subnet::Id
@@ -367,6 +345,10 @@ Mappings:
   mDotmaticsMappings:
     pinpoint: 
       mZipFileName: pinpoint_2.4_38010.zip
+    database:
+      port: 1521
+      RecoDiskSpace: 8
+      DataDiskSpace: 20
 
 Conditions:
   cDNSRecord: !Not [ !Or [ !Equals [!Ref pDnsHostedZoneID, ""] , !Equals [!Ref pDnsHostedZoneApexDomain, ""] ] ]
@@ -461,8 +443,8 @@ Resources:
       VpcId: !Ref pVpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 1521
-          ToPort: 1521
+          FromPort: !FindInMap [mDotmaticsMappings, database, port]
+          ToPort: !FindInMap [mDotmaticsMappings, database, port]
           SourceSecurityGroupId: !Ref rSecurityGroupAppServers
 
   ###
@@ -647,7 +629,8 @@ Resources:
       - !Ref rSecurityGroupAppServers
       - !GetAtt rOracleStack.Outputs.OracleServerAccessSecurityGroup
       UserData:
-        Fn::Base64: !Sub |
+        Fn::Base64: !Sub 
+        - |
           #!/bin/sh
           
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -659,7 +642,7 @@ Resources:
       
           if [ ! -f '/efs/config/browser/browser.properties' ]
           then
-              sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=1521))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
+              sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=${databasePort}))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
               sed -i '/^db.server/s/=.*$/=${rOracleStack.Outputs.PrivateDNSName}/' /ebs/config/browser/browser.properties 
               sed -i '/^db.dba.password/s/=.*$/=${pDatabasePass}/' /ebs/config/browser/browser.properties
               sed -i '/^db.sid/s/=.*$/=${pDatabaseName}/' /ebs/config/browser/browser.properties 
@@ -686,7 +669,7 @@ Resources:
           systemctl start amazon-ssm-agent
 
           /usr/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
-
+        - { databasePort: !FindInMap [ mDotmaticsMappings, database, port]}
   ###
   ### App Server Roles
   ###
@@ -812,18 +795,16 @@ Resources:
             - id: 0.aws:runShellScript
               runCommand: 
               - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/dotmatics.pinpoint.license.txt  /home/oracle/dotmatics.pinpoint.license.txt'"
-              - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/${localPinpointFileName}  /home/oracle/${localPinpointFileName}'"
-                - { 
-                  localPinpointFileName: !FindInMap [ mDotmaticsMappings, pinpoint, mZipFileName ]
-                  }
+              - !Sub
+                - "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/${localPinpointFileName}  /home/oracle/${localPinpointFileName}'"
+                - { localPinpointFileName: !FindInMap [ mDotmaticsMappings, pinpoint, mZipFileName ]}
               - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/install-pinpoint /home/oracle/install-pinpoint'"
               - "su - oracle -c 'export ORACLE_HOME=/u01/app/oracle/product/12c/db_1'"
               - "su - oracle -c 'export PATH=/u01/app/oracle/product/12c/db_1/bin:$PATH'"
               - !Sub "su - oracle -c 'export ORACLE_SID=${pDatabaseName}'"
-              - "su - oracle -c 'sh /home/oracle/install-pinpoint /home/oracle/${localPinpointFileName} /home/oracle/dotmatics.pinpoint.license.txt'"
-                - { 
-                  localPinpointFileName: !FindInMap [ mDotmaticsMappings, pinpoint, mZipFileName ]
-                  }
+              - !Sub
+                - "su - oracle -c 'sh /home/oracle/install-pinpoint /home/oracle/${localPinpointFileName} /home/oracle/dotmatics.pinpoint.license.txt'"
+                - { localPinpointFileName: !FindInMap [ mDotmaticsMappings, pinpoint, mZipFileName ]}
               timeoutSeconds: "{{ executionTimeout }}"
 
   rPinpointInstallSsmDocAssociation:
@@ -851,10 +832,10 @@ Resources:
         DataVolumeType: 'gp2'
         DatabaseName: !Ref pDatabaseName
         DatabasePass: !Ref pDatabasePass
-        DatabasePort: 1521
+        DatabasePort: !FindInMap [mDotmaticsMappings, database, port]
         DomainName: 'dotmaticsdatabase'
-        EBSData: !Ref pEBSData
-        EBSReco: !Ref pEBSReco
+        EBSData: !FindInMap [mDotmaticsMappings, database, DataDiskSpace]
+        EBSReco: !FindInMap [mDotmaticsMappings, database, RecoDiskSpace]
         InstallBucketName: !Ref pInstallBucketName
         InstallBucketPrefix: !Ref pInstallBucketPrefix
         KeyPairName: !Ref pEC2KeyPair

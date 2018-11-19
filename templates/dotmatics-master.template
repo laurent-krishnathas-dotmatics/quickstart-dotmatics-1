@@ -37,8 +37,6 @@ Metadata:
         default: Oracle Configuration - Oracle specific
       Parameters:
       - pDatabaseName
-      - pEBSData
-      - pEBSReco
       - pDatabasePass
       - pAsmPass
       - pDataGuardConfig
@@ -229,22 +227,6 @@ Parameters:
       forward slash (/).
     Default: quickstart-dotmatics/
     Type: String
-  pEBSData:
-    ConstraintDescription: Must be a valid Number from 4 GiB to 16000 GiB
-    Default: '20'
-    Description: Enter the number of Gigabytes for Each ASM Disk (EBS) for DATA Diskgroup
-      total of 6 (six) volumes, maximum of 16000 GiB each.
-    MaxValue: '16000'
-    MinValue: '4'
-    Type: Number
-  pEBSReco:
-    ConstraintDescription: Must be a valid Number from 4 GiB to 16000 GiB
-    Default: '6'
-    Description: Enter the number of Gigabytes for Each ASM Disk (EBS) for RECO Diskgroup
-      total of 3 (three) volumes, maximum of 16000 GiB each.
-    MaxValue: '16000'
-    MinValue: '4'
-    Type: Number
   pDatabasePass:
     AllowedPattern: "([A-Za-z0-9_#$]{3,30})"
     ConstraintDescription: Input your database Password, Min 3, Maximum of 30 characters.
@@ -435,8 +417,6 @@ Resources:
         pDatabasePass: !Ref pDatabasePass
         pDBSubnetA: !GetAtt rVPCStack.Outputs.PrivateSubnet1AID
         pDBSubnetB: !GetAtt rVPCStack.Outputs.PrivateSubnet2AID
-        pEBSData: !Ref pEBSData
-        pEBSReco: !Ref pEBSReco
         pDmzSubnetA: !GetAtt rVPCStack.Outputs.PublicSubnet1ID
         pDmzSubnetB: !GetAtt rVPCStack.Outputs.PublicSubnet2ID
         pDnsHostedZoneApexDomain: !Ref pDnsHostedZoneApexDomain
