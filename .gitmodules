@@ -1,6 +1,6 @@
 [submodule "submodules/quickstart-aws-vpc"]
 	path = submodules/quickstart-aws-vpc
-	url = https://github.com/aws-quickstart/quickstart-aws-vpc
+	url = ../../aws-quickstart/quickstart-aws-vpc
 [submodule "submodules/quickstart-oracle-database"]
 	path = submodules/quickstart-oracle-database
 	url = https://github.com/paulu-aws/quickstart-oracle-database.git
