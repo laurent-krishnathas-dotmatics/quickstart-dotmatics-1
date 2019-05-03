@@ -8,6 +8,7 @@ Metadata:
         default: Dotmatics Configuration
       Parameters:
       - pDNSName
+      - pDotmaticsPinpointLicenseKey
     - Label:
         default: Network Configuration
       Parameters:
@@ -20,7 +21,6 @@ Metadata:
       - pDnsHostedZoneID
       - pDnsHostedZoneApexDomain
       - pLoadBalancerType
-      - pBastionSecurityGroupID
       - pSecurityGroupForWebAccess
       - pWebAccessCIDR
     - Label:
@@ -91,8 +91,6 @@ Metadata:
         default: Web Access Security Group
       pVPCCIDR:
         default: VPC CIDR  
-      pBastionSecurityGroupID: 
-        default: Security Group to be giving access to SSH into App and DB server. AKA, Bastion Security Group.
       pWebAccessCIDR:
         default: Web Access CIDR (No SG)
       QSS3KeyPrefix:
@@ -123,6 +121,8 @@ Metadata:
         default: AWS Secret Access Key
       pDatabaseName:
         default: Primary Database Name
+      pDotmaticsPinpointLicenseKey:
+        default: Dotmatics Pinpoint License Key        
 Parameters:
   pAppServerInstanceType:
     Description: Dotmaics app server EC2 instance type
@@ -190,10 +190,6 @@ Parameters:
     Description: CIDR block for the public (DMZ) subnet 2 located in Availability
       Zone 2
     Type: String
-  pBastionSecurityGroupID:
-    Description: Security group for ssh access
-    Default: ""
-    Type: String    
   pSecurityGroupForWebAccess:
     Description: Security group id for web access. If you leave this empty, you need to specify a CIDR range for the WebAccessCIDR parameter.
     Type: String
@@ -347,7 +343,11 @@ Parameters:
     Description: Enter your Database Name, Min 3, Maximum of 8 characters (limited
       by DB_NAME). Primary instance will have the same name of this.
     Type: String
-
+  pDotmaticsPinpointLicenseKey:
+    Description: Dotmatics will provide you with this value. It is not required to launch the template.
+    Type: String
+    Default: "" 
+    
 Conditions:
   cDNSRecord: !Not [ !Or [ !Equals [!Ref pDnsHostedZoneID, ""] , !Equals [!Ref pDnsHostedZoneApexDomain, ""] ] ]
   pOSBInstall: !Equals [!Ref pOSBInstall, "true"]
@@ -423,10 +423,10 @@ Resources:
         pDnsHostedZoneID: !Ref pDnsHostedZoneID
         pEC2KeyPair: !Ref pEC2KeyPair
         pLoadBalancerType: !Ref pLoadBalancerType
-        pBastionSecurityGroupID: !Ref pBastionSecurityGroupID
         pSecurityGroupForWebAccess: !Ref pSecurityGroupForWebAccess
         pVpcId: !GetAtt rVPCStack.Outputs.VPCID
         pWebAccessCIDR: !Ref pWebAccessCIDR
+        pDotmaticsPinpointLicenseKey: !Ref pDotmaticsPinpointLicenseKey
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
 

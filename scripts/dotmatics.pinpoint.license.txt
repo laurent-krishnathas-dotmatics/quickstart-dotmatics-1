@@ -1,8 +1,8 @@
 *************************DOTMATICS PINPOINT LICENSE KEY*************************
-* mac address:                          F8-63-3F-22-06-64
-* pinpoint license expiry:              31-Dec-18
+* mac address:                          00-00-00-00-00-00
+* pinpoint license expiry:              01-Jan-21
 * licensed organisation:                dotmatics
-* license created on:                   16-Jun-17
+* license created on:                   30-Apr-19
 * license created by:                   created by dotmatics support
 ********************************************************************************
 
@@ -10,4 +10,4 @@ delete from options where name='license';
 
 insert into options(name, value)
   values('license',
-         '23ead33f8eb1a28d1575e973457f61b13b6aab508bfc59a0');
+         'xxLicenseValuexx');

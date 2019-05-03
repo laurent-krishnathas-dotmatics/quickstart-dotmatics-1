@@ -8,6 +8,7 @@ Metadata:
         default: Dotmatics Configuration
       Parameters:
       - pDNSName
+      - pDotmaticsPinpointLicenseKey
     - Label:
         default: Network Configuration
       Parameters:
@@ -113,6 +114,8 @@ Metadata:
         default: Web Access Security Group
       pVpcId:
         default: VPC for Deployment
+      pDotmaticsPinpointLicenseKey:
+        default: Dotmatics Pinpoint License Key.
       pWebAccessCIDR:
         default: Web Access CIDR (No SG)
       QSS3KeyPrefix:
@@ -314,6 +317,10 @@ Parameters:
   pVpcId:
     Description: VPC ID
     Type: AWS::EC2::VPC::Id
+  pDotmaticsPinpointLicenseKey:
+    Description: Dotmatics will provide you with this value. It is not required to launch the template.
+    Type: String
+    Default: "" 
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
@@ -341,7 +348,7 @@ Mappings:
     us-west-2:
       mAppServerAMI: ami-XXXXXXXXXXX
     eu-west-1:
-      mAppServerAMI: ami-037832e23d345b2d7 
+      mAppServerAMI: ami-0eb3ee932692b9222
   mDotmaticsMappings:
     pinpoint: 
       mZipFileName: pinpoint_2.4_38010.zip
@@ -355,6 +362,7 @@ Conditions:
   cWebAccessSG: !Not [ !Equals [ !Ref pSecurityGroupForWebAccess, "" ] ]
   cNoWebAccessSG: !Equals [ !Ref pSecurityGroupForWebAccess, "" ]
   cCreateTLSCert: !Equals [ !Ref pCreateTLSCert, "true" ]
+  cSkipTLSCert: !Equals [ !Ref pCreateTLSCert, "false" ]
 Resources:
   # If a hosted zone is specified, create a DNS Record
   rDNSRecord:
@@ -464,13 +472,27 @@ Resources:
         - Key: Name
           Value: "Dotmatics ALB"
       Type: application
+
+  rLoadBalancerListenerHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: cSkipTLSCert
+    Properties:
+        LoadBalancerArn: !Ref rApplicationLoadBalancer
+        Port: '80' 
+        Protocol: 'HTTP'
+        DefaultActions: 
+            - Type: forward
+              TargetGroupArn: !Ref rLoadBalancerTargetGroup
       
   rLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: cCreateTLSCert
     Properties:
+        Certificates : 
+            - CertificateArn: !Ref rALBCertificate
         LoadBalancerArn: !Ref rApplicationLoadBalancer
-        Port: !If [ cCreateTLSCert, '443', '80' ]
-        Protocol: !If [ cCreateTLSCert, 'HTTPS', 'HTTP' ]
+        Port: '443'
+        Protocol: 'HTTPS'
         DefaultActions: 
             - Type: forward
               TargetGroupArn: !Ref rLoadBalancerTargetGroup
@@ -795,6 +817,7 @@ Resources:
             - id: 0.aws:runShellScript
               runCommand: 
               - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/dotmatics.pinpoint.license.txt  /home/oracle/dotmatics.pinpoint.license.txt'"
+              - !Sub "su - oracle -c 'sed -i s/xxLicenseValuexx/${pDotmaticsPinpointLicenseKey}/g /home/oracle/dotmatics.pinpoint.license.txt'"
               - !Sub
                 - "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/${localPinpointFileName}  /home/oracle/${localPinpointFileName}'"
                 - { localPinpointFileName: !FindInMap [ mDotmaticsMappings, pinpoint, mZipFileName ]}

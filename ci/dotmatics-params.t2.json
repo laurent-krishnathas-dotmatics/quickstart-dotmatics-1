@@ -1,0 +1,138 @@
+[
+  {
+    "ParameterKey": "pAppServerInstanceType",
+    "ParameterValue": "t2.large"
+  },
+  {
+    "ParameterKey": "pAppSubnetA",
+    "ParameterValue": "subnet-083dfd3d9e4b77df8"
+  },
+  {
+    "ParameterKey": "pAppSubnetB",
+    "ParameterValue": "subnet-09d00f14e9ca6b5d6"
+  },
+  {
+    "ParameterKey": "pAsmPass",
+    "ParameterValue": "Gir123#a"
+  },
+  {
+    "ParameterKey": "pCreateTLSCert",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "pDatabaseName",
+    "ParameterValue": "dotmtsdb"
+  },
+  {
+    "ParameterKey": "pDatabasePass",
+    "ParameterValue": "Gir123#a"
+  },
+  {
+    "ParameterKey": "pDataGuardConfig",
+    "ParameterValue": "Single"
+  },
+  {
+    "ParameterKey": "pDBSubnetA",
+    "ParameterValue": "subnet-050552c06a3b7feef"
+  },
+  {
+    "ParameterKey": "pDBSubnetB",
+    "ParameterValue": "subnet-07905a2ef4c7ba68c"
+  },
+  {
+    "ParameterKey": "pDmzSubnetA",
+    "ParameterValue": "subnet-0d6462861a72c71b0"
+  },
+  {
+    "ParameterKey": "pDmzSubnetB",
+    "ParameterValue": "subnet-098b01616053797bf"
+  },
+  {
+    "ParameterKey": "pDnsHostedZoneApexDomain",
+    "ParameterValue": "underwoodpaul.com"
+  },
+  {
+    "ParameterKey": "pDnsHostedZoneID",
+    "ParameterValue": "Z4M3QOBWCZGZA"
+  },
+  {
+    "ParameterKey": "pDNSName",
+    "ParameterValue": "dotmaticss"
+  },
+  {
+    "ParameterKey": "pEC2KeyPair",
+    "ParameterValue": "paulu-hclscollab-taskcat"
+  },
+  {
+    "ParameterKey": "pInstallBucketName",
+    "ParameterValue": "devspacepaul"
+  },
+  {
+    "ParameterKey": "pInstallBucketPrefix",
+    "ParameterValue": "oraclebins"
+  },
+  {
+    "ParameterKey": "pLoadBalancerType",
+    "ParameterValue": "internal"
+  },
+  {
+    "ParameterKey": "pOracleInstanceType",
+    "ParameterValue": "t2.large"
+  },
+  {
+    "ParameterKey": "pOSBBucketName",
+    "ParameterValue": "override"
+  },
+  {
+    "ParameterKey": "pOSBInstall",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "pOSBKey",
+    "ParameterValue": "override"
+  },
+  {
+    "ParameterKey": "pOSBOTN",
+    "ParameterValue": "override"
+  },
+  {
+    "ParameterKey": "pOSBPass",
+    "ParameterValue": "Gir123#a"
+  },
+  {
+    "ParameterKey": "pOSBSecret",
+    "ParameterValue": "Gir123#a"
+  },
+  {
+    "ParameterKey": "pPrimaryIPAddress",
+    "ParameterValue": "10.131.119.6"
+  },
+  {
+    "ParameterKey": "pSecurityGroupForWebAccess",
+    "ParameterValue": "sg-062b7a8078e7261ed"
+  },
+  {
+    "ParameterKey": "pStandbyIPAddress",
+    "ParameterValue": "10.131.212.6"
+  },
+  {
+    "ParameterKey": "pVpcId",
+    "ParameterValue": "vpc-09f3f9e1547f2db56"
+  },
+  {
+    "ParameterKey": "pWebAccessCIDR",
+    "ParameterValue": "10.0.0.0/16"
+  },
+  {
+    "ParameterKey": "QSS3BucketName",
+    "ParameterValue": "paulu-hclscollab-taskcat-bucket"
+  },
+  {
+    "ParameterKey": "QSS3KeyPrefix",
+    "ParameterValue": "quickstart-dotmatics/"
+  },  
+  {
+    "ParameterKey": "pDotmaticsPinpointLicenseKey",
+    "ParameterValue": "244b48928b74b83f2c6974275b8faab59bf44ead1747b23d"
+  }
+]
