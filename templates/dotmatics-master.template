@@ -8,7 +8,6 @@ Metadata:
         default: Dotmatics Configuration
       Parameters:
       - pDNSName
-      - pDotmaticsPinpointLicenseKey
     - Label:
         default: Network Configuration
       Parameters:
@@ -121,8 +120,6 @@ Metadata:
         default: AWS Secret Access Key
       pDatabaseName:
         default: Primary Database Name
-      pDotmaticsPinpointLicenseKey:
-        default: Dotmatics Pinpoint License Key        
 Parameters:
   pAppServerInstanceType:
     Description: Dotmaics app server EC2 instance type
@@ -255,16 +252,16 @@ Parameters:
     AllowedPattern: "^[0-9a-zA-Z-]+([0-9a-zA-Z-]+)*$"
     ConstraintDescription: Bucket name can include numbers, lowercase letters, uppercase
       letters, hyphens (-).
-    Description: Name of your S3 bucket with your Oracle Binaries (e.g., bucket-name)
+    Description: Name of your S3 bucket with your Oracle Binaries and Dotmatics Pinpoint license key (e.g., bucket-name) 
     Type: String
   pInstallBucketPrefix:
     AllowedPattern: "^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$"
     ConstraintDescription: Key prefix can include numbers, lowercase letters, uppercase
       letters, hyphens (-), and forward slash (/). It cannot start or end with forward
       slash (/) because they are automatically appended.
-    Description: Name of your S3 prefix with your Oracle Binaries (e.g., key/prefix)
+    Description: Name of your S3 prefix with your Oracle Binaries and Dotmatics Pinpoint license key (e.g., key/prefix)
     Type: String
-    Default: oracle/database/12
+    Default: titiandb/assets
   pOracleInstanceType:
     AllowedValues:
     - t2.medium
@@ -343,10 +340,6 @@ Parameters:
     Description: Enter your Database Name, Min 3, Maximum of 8 characters (limited
       by DB_NAME). Primary instance will have the same name of this.
     Type: String
-  pDotmaticsPinpointLicenseKey:
-    Description: Dotmatics will provide you with this value. It is not required to launch the template.
-    Type: String
-    Default: "" 
     
 Conditions:
   cDNSRecord: !Not [ !Or [ !Equals [!Ref pDnsHostedZoneID, ""] , !Equals [!Ref pDnsHostedZoneApexDomain, ""] ] ]
@@ -426,7 +419,6 @@ Resources:
         pSecurityGroupForWebAccess: !Ref pSecurityGroupForWebAccess
         pVpcId: !GetAtt rVPCStack.Outputs.VPCID
         pWebAccessCIDR: !Ref pWebAccessCIDR
-        pDotmaticsPinpointLicenseKey: !Ref pDotmaticsPinpointLicenseKey
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
 

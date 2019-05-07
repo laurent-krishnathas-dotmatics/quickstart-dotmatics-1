@@ -130,9 +130,5 @@
   {
     "ParameterKey": "QSS3KeyPrefix",
     "ParameterValue": "quickstart-dotmatics/"
-  },  
-  {
-    "ParameterKey": "pDotmaticsPinpointLicenseKey",
-    "ParameterValue": "244b48928b74b83f2c6974275b8faab59bf44ead1747b23d"
   }
 ]
