@@ -665,9 +665,9 @@ Resources:
               
               if [ '${pDnsHostedZoneID}' = '' ]
                 then
-                  sed -i '/^app.browserurl/s/=.*$/=${rApplicationLoadBalancer.DNSName}/' /ebs/config/browser/browser.properties 
+                  sed -i '/^app.browserurl/s/=.*$/=http:\/\/${rApplicationLoadBalancer.DNSName}/' /ebs/config/browser/browser.properties 
                 else 
-                  sed -i '/^app.browserurl/s/=.*$/=${pDNSName}.${pDnsHostedZoneApexDomain}/' /ebs/config/browser/browser.properties 
+                  sed -i '/^app.browserurl/s/=.*$/=https:\/\/${pDNSName}.${pDnsHostedZoneApexDomain}/' /ebs/config/browser/browser.properties 
               fi
               
               cp -Rp /ebs/config /efs/config/
