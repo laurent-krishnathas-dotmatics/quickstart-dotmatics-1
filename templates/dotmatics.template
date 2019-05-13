@@ -657,6 +657,9 @@ Resources:
       
           if [ ! -f '/efs/config/browser/browser.properties' ]
           then
+              
+              aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt /ebs/config/browser/dotmatics.license.txt
+          
               sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=${databasePort}))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
               sed -i '/^db.server/s/=.*$/=${rOracleStack.Outputs.PrivateDNSName}/' /ebs/config/browser/browser.properties 
               sed -i '/^db.dba.password/s/=.*$/=${pDatabasePass}/' /ebs/config/browser/browser.properties
@@ -702,6 +705,23 @@ Resources:
           Action:
           - sts:AssumeRole
       Path: "/"
+      
+  rLicenseKeyPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: LicenseKeyPermissions
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: AllowAccessToLicenseKeys
+          Effect: Allow
+          Action:
+          - s3:GetObject
+          Resource:
+          - !Sub "arn:aws:s3:::${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt"
+          - !Sub "arn:aws:s3:::${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.pinpoint.license.txt"
+      Roles: 
+      - !Ref rAppServerRole
   
   rCloudWatchPutMetricsRolePolicy:
     Type: AWS::IAM::Policy
