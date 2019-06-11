@@ -343,7 +343,7 @@ Parameters:
 Mappings:
   AWSAMIRegionMap:
     us-east-1:
-      mAppServerAMI: ami-XXXXXXXXXXX
+      mAppServerAMI: ami-00f32687ee1581e79
     us-west-2:
       mAppServerAMI: ami-XXXXXXXXXXX
     eu-west-1:
