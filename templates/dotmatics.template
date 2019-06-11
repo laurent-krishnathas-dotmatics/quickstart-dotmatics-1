@@ -248,17 +248,14 @@ Parameters:
   pAppServerInstanceType:
     Description: Dotmatics app server EC2 instance type
     Type: String
-    Default: t2.large
+    Default: t3.large
     AllowedValues: 
-      - t2.medium
-      - t2.large
-      - t2.xlarge
+      - t3.medium
+      - t3.large
+      - t3.xlarge
       - m5.large
       - m5.xlarge
       - m5.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
   pAppSubnetA:
     Description: Production App Subnet A. Target subnet for the app server. 
     Type: AWS::EC2::Subnet::Id
@@ -349,6 +346,9 @@ Mappings:
       port: 1521
       RecoDiskSpace: 8
       DataDiskSpace: 20
+      OracleAMIOS: 'Oracle-Linux-7.3-HVM'
+      StandBy: 'StandbyName'
+      DomainName: 'dotmaticsdatabase'
 
 Conditions:
   cDNSRecord: !Not [ !Or [ !Equals [!Ref pDnsHostedZoneID, ""] , !Equals [!Ref pDnsHostedZoneApexDomain, ""] ] ]
@@ -764,9 +764,7 @@ Resources:
     Type: AWS::EFS::FileSystem
     Properties:
       Encrypted: true
-      KmsKeyId: !GetAtt 
-        - rEfsKey
-        - Arn
+      KmsKeyId: !GetAtt rEfsKey.Arn
       FileSystemTags:
       - Key: Name
         Value: 'Dotmatics AppServer NFSv4'
@@ -851,13 +849,13 @@ Resources:
         DatabaseName: !Ref pDatabaseName
         DatabasePass: !Ref pDatabasePass
         DatabasePort: !FindInMap [mDotmaticsMappings, database, port]
-        DomainName: 'dotmaticsdatabase'
+        DomainName: !FindInMap [mDotmaticsMappings, database, DomainName]
         EBSData: !FindInMap [mDotmaticsMappings, database, DataDiskSpace]
         EBSReco: !FindInMap [mDotmaticsMappings, database, RecoDiskSpace]
         InstallBucketName: !Ref pInstallBucketName
         InstallBucketPrefix: !Ref pInstallBucketPrefix
         KeyPairName: !Ref pEC2KeyPair
-        OracleAMIOS: 'Oracle-Linux-7.3-HVM'
+        OracleAMIOS: !FindInMap [mDotmaticsMappings, database, OracleAMIOS]
         OracleInstanceType: !Ref pOracleInstanceType
         OSBBucketName: !Ref pOSBBucketName
         OSBInstall: !Ref pOSBInstall
@@ -871,7 +869,7 @@ Resources:
         RecoIOPS: '0'
         RecoVolumeType: 'gp2'
         StandbyIPAddress: !Ref pStandbyIPAddress
-        StandbyName: 'dotdbstby'
+        StandbyName: !FindInMap [mDotmaticsMappings, database, StandbyName]
         VPCID: !Ref pVpcId
         EnableCWL: 'true'  
 
