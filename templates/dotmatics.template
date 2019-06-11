@@ -657,9 +657,6 @@ Resources:
       
           if [ ! -f '/efs/config/browser/browser.properties' ]
           then
-              
-              aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt /ebs/config/browser/dotmatics.license.txt
-          
               sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=${databasePort}))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
               sed -i '/^db.server/s/=.*$/=${rOracleStack.Outputs.PrivateDNSName}/' /ebs/config/browser/browser.properties 
               sed -i '/^db.dba.password/s/=.*$/=${pDatabasePass}/' /ebs/config/browser/browser.properties
@@ -677,8 +674,11 @@ Resources:
           fi
           
           sed -i 's/ebs/efs/g' /project/browser/docker/stack/browser/browser-production.yml
-          
-          
+          rm -rf /efs/config/browser/browser-install*
+          rm -rf /efs/config/browser/dotmatics.license.txt
+          aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt  /efs/config/browser/dotmatics.license.txt
+          aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "browser-install-*.zip"
+
           systemctl stop browser.service
           systemctl start browser.service
           
@@ -705,23 +705,6 @@ Resources:
           Action:
           - sts:AssumeRole
       Path: "/"
-      
-  rLicenseKeyPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: LicenseKeyPermissions
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Sid: AllowAccessToLicenseKeys
-          Effect: Allow
-          Action:
-          - s3:GetObject
-          Resource:
-          - !Sub "arn:aws:s3:::${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt"
-          - !Sub "arn:aws:s3:::${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.pinpoint.license.txt"
-      Roles: 
-      - !Ref rAppServerRole
   
   rCloudWatchPutMetricsRolePolicy:
     Type: AWS::IAM::Policy
