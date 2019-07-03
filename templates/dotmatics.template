@@ -347,7 +347,7 @@ Mappings:
       RecoDiskSpace: 8
       DataDiskSpace: 20
       OracleAMIOS: 'Oracle-Linux-7.3-HVM'
-      StandbyName: 'dotdbstby'
+      StandbyName: 'StandbyName'
       DomainName: 'dotmaticsdatabase'
 
 Conditions:
