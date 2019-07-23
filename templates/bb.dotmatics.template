@@ -5,11 +5,11 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
     - Label:
-        default: Dotmatics Configuration
+        default: Dotmatics configuration
       Parameters:
       - pDNSName
     - Label:
-        default: Network Configuration
+        default: Network configuration
       Parameters:
       - pVpcId
       - pDmzSubnetA
@@ -25,11 +25,12 @@ Metadata:
       - pSecurityGroupForWebAccess
       - pWebAccessCIDR
     - Label:
-        default: Amazon EC2 App Server Configuration
+        default: Amazon EC2 application server configuration
       Parameters:
       - pEC2KeyPair
+      - pAppServerInstanceType
     - Label:
-        default: Oracle Configuration - Oracle specific
+        default: Oracle configuration
       Parameters:
       - pDatabaseName
       - pDatabasePass
@@ -41,7 +42,7 @@ Metadata:
       - pPrimaryIPAddress
       - pStandbyIPAddress
     - Label:
-        default: Oracle Secure Backup Cloud Module (Optional)
+        default: OSB Cloud Module configuration (optional)
       Parameters:
       - pOSBInstall
       - pOSBOTN
@@ -50,75 +51,75 @@ Metadata:
       - pOSBKey
       - pOSBSecret
     - Label:
-        default: AWS QuickStart Configuration
+        default: AWS Quick Start configuration
       Parameters:
       - QSS3BucketName
       - QSS3KeyPrefix      
     ParameterLabels:
       pCreateTLSCert:
-        default: Create a TLS Certificate for the Load Balancer?
+        default: Create a TLS certificate for the load balancer?
       pStandbyIPAddress:
-        default: Standby Database Private IP (Only required if using Oracle Data Guard)
+        default: Standby database private IP (only if using Oracle Data Guard)
       pPrimaryIPAddress:
-        default: Primary Database Private IP
+        default: Primary database private IP
       pOSBBucketName:
-        default: S3 Bucket for Backups
+        default: S3 bucket for backups
       pOSBInstall:
         default: Install Oracle Secure Backup
       pOSBKey:
-        default: AWS Access Key ID
+        default: AWS access key ID
       pOSBOTN:
-        default: OTN Account Email/Login
+        default: OTN account email/login
       pOSBPass:
-        default: OTN Account Password
+        default: OTN account password
       pOSBSecret:
-        default: AWS Secret Access Key
+        default: AWS secret access key
       pOracleInstanceType:
-        default: Database Instance Type
+        default: Database instance type
       pInstallBucketName:
-        default: Binaries Bucket Name
+        default: Binaries bucket name
       pInstallBucketPrefix:
-        default: Binaries Bucket Key Prefix
+        default: Binaries bucket key prefix
       pDataGuardConfig:
-        default: Data Guard Configuration
+        default: Data Guard configuration
       pAppServerInstanceType:
-        default: App Server Instance Type
+        default: Application server instance type
       pAppSubnetA:
-        default: Application Subnet A
+        default: Application subnet A
       pAppSubnetB:
-        default: Application Subnet B
+        default: Application subnet B
       pDatabaseName:
-        default: Primary Database Name
+        default: Primary database name
       pDBSubnetA:
-        default: Database Subnet A
+        default: Database subnet A
       pDBSubnetB:
-        default: Database Subnet B
+        default: Database subnet B
       pAsmPass:
-        default: ASM Password
+        default: ASM password
       pDmzSubnetA:
-        default: DMZ Subnet A
+        default: Public subnet A
       pDmzSubnetB:
-        default: DMZ Subnet B
+        default: Public subnet B
       pDnsHostedZoneApexDomain:
-        default: Internal DNS Apex Domain
+        default: Internal DNS apex domain
       pDnsHostedZoneID:
         default: Internal DNS hosted zone ID
       pDNSName: 
-        default: Dotmatics Server DNS Name
+        default: Dotmatics server DNS name
       pEC2KeyPair:
-        default: Key Pair for Dotmatics Web and Database Server
+        default: Key pair for Dotmatics application and database server
       pLoadBalancerType:
-        default: Load Balancer Type
+        default: Load balancer type
       pSecurityGroupForWebAccess:
-        default: Web Access Security Group
+        default: Web access security group
       pVpcId:
-        default: VPC for Deployment
+        default: VPC for deployment
       pWebAccessCIDR:
-        default: Web Access CIDR (No SG)
+        default: Web access CIDR
       QSS3KeyPrefix:
-        default: Quick Start S3 Key Prefix
+        default: Quick Start S3 key prefix
       QSS3BucketName:
-        default: Quick Start S3 Bucket Name
+        default: Quick Start S3 bucket name
        
 Parameters:
   pCreateTLSCert:
