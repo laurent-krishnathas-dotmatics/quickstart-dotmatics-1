@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Launches a Dotmatics application server and database.
+Description: Launches a Dotmatics application server and database. (qp-1ol3teqgp)
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
