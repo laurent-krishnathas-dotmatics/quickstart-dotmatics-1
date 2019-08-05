@@ -56,10 +56,12 @@ Metadata:
       - QSS3BucketName
       - QSS3KeyPrefix      
     ParameterLabels:
+      pDatabasePass: 
+        default: Database Password
       pCreateTLSCert:
         default: Create a TLS certificate for the load balancer?
       pStandbyIPAddress:
-        default: Standby database private IP (only if using Oracle Data Guard)
+        default: Standby database private IP (Only required if you set Data Guard configuration above to Data Guard)
       pPrimaryIPAddress:
         default: Primary database private IP
       pOSBBucketName:
@@ -126,7 +128,7 @@ Parameters:
     AllowedValues:
     - 'true'
     - 'false'
-    Default: 'false'
+    Default: 'true'
     Description: Do you want to create and associate a TLS certificate with the Application Load Balancer? This template performs domain validation as documented here - https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html
     Type: String
   pStandbyIPAddress:
