@@ -61,7 +61,7 @@ Metadata:
       pCreateTLSCert:
         default: Create a TLS certificate for the load balancer?
       pStandbyIPAddress:
-        default: Standby database private IP (Only required if you set Data Guard configuration above to Data Guard)
+        default: Standby database private IP
       pPrimaryIPAddress:
         default: Primary database private IP
       pOSBBucketName:
@@ -134,7 +134,7 @@ Parameters:
   pStandbyIPAddress:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
     ConstraintDescription: IP address parameter must be in the form x.x.x.x
-    Description: This must be a valid IP address for private subnet 2. Only required if using Oracle DataGuard
+    Description: This must be a valid IP address for private subnet 2. Only required if using Oracle Data Guard
     Type: String
   pPrimaryIPAddress:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
@@ -307,6 +307,7 @@ Parameters:
     Description: Key Name for app and db server.
     Type: AWS::EC2::KeyPair::KeyName  
   pLoadBalancerType:
+    Description: The type (internet-facing or internal) of the load balancer. If you keep the default setting, the load balancer will be internet addressable and you don’t need VPN. If you choose internal, you must connect to your VPN solution after deployment, so that your DHCP options use the VPC DNS server in the VPC that your hosted zone is attached to.
     Default: internet-facing
     Type: String
     AllowedValues: 
@@ -323,6 +324,7 @@ Parameters:
   pVpcId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>'
     Default: /BB/Networking/VPC/Research
+    Description: The ID of your existing VPC to use for the Dotmatics
     
     
   QSS3BucketName:
