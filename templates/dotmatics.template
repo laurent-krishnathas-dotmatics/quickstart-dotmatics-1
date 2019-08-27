@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Launches a Dotmatics application server and database. (qsid-1ps37qdrl)
+Description: Launches a Dotmatics application server and database. (qs-1ps37qdrl)
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
