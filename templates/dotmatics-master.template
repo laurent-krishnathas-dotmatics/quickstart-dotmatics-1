@@ -354,7 +354,7 @@ Resources:
       Parameters:
         AvailabilityZones: !Join [ "," , !Ref pAvailabilityZones ]
         KeyPairName: !Ref pEC2KeyPair
-        NumberOfAZs: 2
+        NumberOfAZs: "2"
         PrivateSubnet1ACIDR: !Ref pPrivateSubnet1CIDR
         PrivateSubnet2ACIDR: !Ref pPrivateSubnet2CIDR
         PublicSubnet1CIDR: !Ref pPublicSubnet1CIDR

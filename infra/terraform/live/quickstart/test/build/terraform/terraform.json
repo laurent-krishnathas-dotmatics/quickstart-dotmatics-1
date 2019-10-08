@@ -1,0 +1,27 @@
+{
+    "ec2_id": {
+        "sensitive": false,
+        "type": "string",
+        "value": "i-04994c66e126267c6"
+    },
+    "ec2_private_ip": {
+        "sensitive": false,
+        "type": "string",
+        "value": "172.27.12.131"
+    },
+    "environment": {
+        "sensitive": false,
+        "type": "string",
+        "value": "test"
+    },
+    "key_name": {
+        "sensitive": false,
+        "type": "string",
+        "value": "celgene"
+    },
+    "name": {
+        "sensitive": false,
+        "type": "string",
+        "value": "sample"
+    }
+}

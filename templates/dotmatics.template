@@ -369,7 +369,7 @@ Resources:
       Comment: Internal DNS CNAME for Dotmatics.
       Name: !Sub ${pDNSName}.${pDnsHostedZoneApexDomain}
       Type: CNAME 
-      TTL: 60
+      TTL: "60"
       ResourceRecords:
         - !GetAtt rApplicationLoadBalancer.DNSName
 
@@ -412,8 +412,8 @@ Resources:
       VpcId: !Ref pVpcId
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: !If [ cCreateTLSCert, '443', '80' ]
-        ToPort: !If [ cCreateTLSCert, '443', '80' ]
+        FromPort: !If [ cCreateTLSCert, 443, 80 ]
+        ToPort: !If [ cCreateTLSCert, 443, 80 ]
         SourceSecurityGroupId: !Ref pSecurityGroupForWebAccess
       Tags: 
       - Key: Name
@@ -426,8 +426,8 @@ Resources:
       VpcId: !Ref pVpcId
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: !If [ cCreateTLSCert, '443', '80' ]
-        ToPort: !If [ cCreateTLSCert, '443', '80' ]
+        FromPort: !If [ cCreateTLSCert, 443, 80 ]
+        ToPort: !If [ cCreateTLSCert, 443, 80 ]
         CidrIp: !Ref pWebAccessCIDR
       Tags:
       - Key: Name
@@ -474,7 +474,7 @@ Resources:
     Condition: cSkipTLSCert
     Properties:
         LoadBalancerArn: !Ref rApplicationLoadBalancer
-        Port: '80' 
+        Port: 80
         Protocol: 'HTTP'
         DefaultActions: 
             - Type: forward
@@ -487,7 +487,7 @@ Resources:
         Certificates : 
             - CertificateArn: !Ref rALBCertificate
         LoadBalancerArn: !Ref rApplicationLoadBalancer
-        Port: '443'
+        Port: 443
         Protocol: 'HTTPS'
         DefaultActions: 
             - Type: forward
@@ -502,7 +502,7 @@ Resources:
         HealthCheckIntervalSeconds: 180
         HealthCheckTimeoutSeconds: 30
         HealthyThresholdCount: 2  
-        HealthCheckPort: 80
+        HealthCheckPort: '80'
         UnhealthyThresholdCount: 10
         Protocol: HTTP
         Matcher: 
@@ -527,8 +527,8 @@ Resources:
         - !Ref pAppSubnetA
         - !Ref pAppSubnetB
       LaunchConfigurationName: !Ref rAutoScalingConfigApp
-      MinSize: 1
-      MaxSize: 1
+      MinSize: '1'
+      MaxSize: '1'
       HealthCheckType: ELB
       HealthCheckGracePeriod: 300
       Tags:
@@ -759,8 +759,8 @@ Resources:
       GroupDescription: Security group for Dotmatics app server mount target
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: '2049'
-        ToPort: '2049'
+        FromPort: 2049
+        ToPort: 2049
         SourceSecurityGroupId: !Ref rSecurityGroupAppServers    
 
   rFilesystem:
