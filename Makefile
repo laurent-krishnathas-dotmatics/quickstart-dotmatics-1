@@ -6,7 +6,12 @@
 taskcat:
 	cd .. && \
 	pwd && \
-	taskcat -c quickstart-dotmatics/ci/config.vpc.yml -n -P taskcat_test -v
+	taskcat -c quickstart-dotmatics/ci/config.vpc.yml  -P taskcat_test -v
+
+taskcat_debug:
+	cd .. && \
+	pwd && \
+	taskcat -c quickstart-dotmatics/ci/config.vpc.yml -n -P taskcat_test
 
 initialize:
 	git submodule init
@@ -27,5 +32,5 @@ ssm_db_server: check_aws_profile
 	aws ssm start-session --target $$(aws ec2 describe-instances --region eu-west-1 --filters "Name=tag:Name,Values=$(DB_INSTANCE_NAME_TAG)" "Name=instance-state-name,Values=running" --query "Reservations[*].Instances[*].InstanceId" --output=text)
 
 
-check_aws_profile:
-#	[ ! -z "$$AWS_PROFILE" ] && echo "error: AWS_PROFILE is not set" && exit 1
+
+
