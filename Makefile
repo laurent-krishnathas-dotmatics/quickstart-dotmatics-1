@@ -11,7 +11,7 @@ taskcat:
 taskcat_debug:
 	cd .. && \
 	pwd && \
-	taskcat -c quickstart-dotmatics/ci/config.vpc.yml -n -P taskcat_test
+	taskcat -c quickstart-dotmatics/ci/config.vpc.yml -n -P taskcat_test -t user=$$(whoami) -s $$(whoami)-
 
 initialize:
 	git submodule init
