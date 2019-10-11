@@ -622,8 +622,8 @@ Resources:
               mode: '000755'
               owner: centos
               group: centos
-            "/home/ec2-user/crontab":
-              content: "* * * * * /usr/sbin/nfsstat | /home/ec2-user/post_nfsstat\n"
+            "/home/centos/crontab":
+              content: "* * * * * /usr/sbin/nfsstat | /home/centos/post_nfsstat\n"
               owner: centos
               group: centos
           commands:
@@ -650,14 +650,18 @@ Resources:
         Fn::Base64: !Sub 
         - |
           #!/bin/sh
-          
+
+          ls -ls ~/
+
+          echo "[debug] install get-pip"
+
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
           python get-pip.py
           
           pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
           /usr/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets MountConfig --region ${AWS::Region}
-          crontab /home/ec2-user/crontab
-      
+          crontab /home/centos/crontab
+
           if [ ! -f '/efs/config/browser/browser.properties' ]
           then
               sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=${databasePort}))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
@@ -682,8 +686,14 @@ Resources:
           aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt  /efs/config/browser/dotmatics.license.txt
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "browser-install-*.zip"
 
+          docker swarm leave
+          docker swarm init
+
           systemctl stop browser.service
           systemctl start browser.service
+
+          sleep 5
+          systemctl status browser.service
           
           yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
           systemctl enable amazon-ssm-agent
