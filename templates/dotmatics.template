@@ -649,15 +649,12 @@ Resources:
 
           set -x
 
-          echo "1" >> /home/ec2-user/test.log
           yum update -y
-
           yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-          systemctl status amazon-ssm-agent
           systemctl enable amazon-ssm-agent
           systemctl start amazon-ssm-agent
+          systemctl status amazon-ssm-agent
 
-          echo "2" >> /home/ec2-user/test.log
 
 
           yum install -y  gem tmux tree wget ntp unzip vim tzdata python-pip
@@ -670,25 +667,21 @@ Resources:
 
           mkdir -p /project/browser
           chmod -R 755 /project/browser
-          aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}infra/ /project/browser/ --recursive
+          aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}infra/ /project/browser/ --recursive --quiet
           chown -R ec2-user:ec2-user /project
           ls -ls /project/browser/
-
-          echo "3" >> /home/ec2-user/test.log
 
 
           mv /project/browser/infrastructor/templates/browser.service.tmpl /etc/systemd/system/browser.service
           chmod 644 /etc/systemd/system/browser.service
           chown root:root /etc/systemd/system/browser.service
 
-          echo "4" >> /home/ec2-user/test.log
 
           #curl -fsSL https://goss.rocks/install |  sh
           #docker ps
           #/usr/local/bin/goss -g  /project/browser/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
           #echo "GOSS validate Success"
 
-          echo "5" >> /home/ec2-user/test.log
 
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
           python get-pip.py
@@ -697,25 +690,21 @@ Resources:
           /usr/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets MountConfig --region ${AWS::Region}
           crontab /home/ec2-user/crontab
 
-          echo "6" >> /home/ec2-user/test.log
-
 
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "bioregister.groovy" --quiet
 
-
-
-          if [  -f '/efs/config/browser/bioregister.groovy ' ]
-          then
-              sed -i 's/localhost/${rApplicationLoadBalancer.DNSName}/g'  /efs/config/browser/bioregister.groovy
-              sed -i 's/oracle_host/${rOracleStack.Outputs.PrivateDNSName}/g'  /efs/config/browser/bioregister.groovy
+          if [  -f '/efs/config/browser/bioregister.groovy' ]
+              then
+                  echo "bioregister.groovy exists."
+                  sed -i 's/localhost/${rApplicationLoadBalancer.DNSName}/g'  /efs/config/browser/bioregister.groovy
+                  sed -i 's/oracle_host/${rOracleStack.Outputs.PrivateDNSName}/g'  /efs/config/browser/bioregister.groovy
+              else
+                  echo "bioregister.groovy doesn't exist."
           fi
-
-          echo "6.5" >> /home/ec2-user/test.log
 
           if [ ! -f '/efs/config/browser/browser.properties' ]
           then
-              echo "7" >> /home/ec2-user/test.log
-
+              echo "Not found browser.properties. Start downloading."
               aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/browser.properties  /efs/config/browser/browser.properties --quiet
 
               sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=${databasePort}))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /efs/config/browser/browser.properties
@@ -726,42 +715,35 @@ Resources:
 
               if [ '${pDnsHostedZoneID}' = '' ]
                 then
-                  echo "8" >> /home/ec2-user/test.log
+                  echo "pDnsHostedZoneID is empty."
                   sed -i '/^app.browserurl/s/=.*$/=http:\/\/${rApplicationLoadBalancer.DNSName}/' /efs/config/browser/browser.properties
                 else
-                  echo "9" >> /home/ec2-user/test.log
+                  echo "pDnsHostedZoneID is not empty."
                   sed -i '/^app.browserurl/s/=.*$/=https:\/\/${pDNSName}.${pDnsHostedZoneApexDomain}/' /efs/config/browser/browser.properties
               fi
-
-              #cp -Rp /ebs/config /efs/config/
+          else:
+              echo "browser.properties exists."
           fi
 
-          echo "10" >> /home/ec2-user/test.log
-          #sed -i 's/ebs/efs/g' /project/browser/docker/stack/browser/browser-production.yml
           rm -rf /efs/config/browser/browser-install*
           rm -rf /efs/config/browser/dotmatics.license.txt
+
+          echo "Downloading war/zip files."
           aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt  /efs/config/browser/dotmatics.license.txt --quiet
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "browser-install-*.zip" --quiet
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "bioregister-*.war" --quiet
 
           ls -ls /efs/config/browser/
 
-
-          docker swarm leave
+          docker swarm leave || true
           docker swarm init
 
           systemctl stop browser.service
           systemctl start browser.service
-
-          echo "11" >> /home/ec2-user/test.log
           sleep 5
           systemctl status browser.service
 
-          yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-          systemctl enable amazon-ssm-agent
-          systemctl start amazon-ssm-agent
-
-          /usr/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
         - { databasePort: !FindInMap [ mDotmaticsMappings, database, port]}
   ###
   ### App Server Roles

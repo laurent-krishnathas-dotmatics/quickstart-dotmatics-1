@@ -58,6 +58,7 @@ stack_rm_browser:
 
 
 scale_down_bioregister:
+	ls -ls /efs/config/browser/
 ifeq (,$(wildcard $(BIOREGISTER_GROOVY)))
 	$(warning [WARN] $(BIOREGISTER_GROOVY) doesn't exist. It is going to scale down bioregister container to 0 )
 	docker service scale browser-$(ENV)_bioregister=0 || true
