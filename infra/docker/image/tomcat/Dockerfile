@@ -32,7 +32,9 @@ EXPOSE 8080
 
 COPY docker/image/tomcat/goss /goss
 
-RUN /goss/install && goss -g /goss/goss-buildtime.yaml validate
+RUN  chmod +x /goss/install && \
+     /goss/install && \
+     goss -g /goss/goss-buildtime.yaml validate
 
 HEALTHCHECK --interval=30s --timeout=30s --retries=5 CMD goss -g /goss/healthcheck.yaml validate
 

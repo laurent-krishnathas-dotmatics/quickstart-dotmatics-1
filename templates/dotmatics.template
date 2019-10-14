@@ -887,7 +887,7 @@ Resources:
               runCommand:
               - !Sub "su - oracle -c 'aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.pinpoint.license.txt  /home/oracle/dotmatics.pinpoint.license.txt'"
               - !Sub
-                - "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/${localPinpointFileName}  /home/oracle/${localPinpointFileName}'"
+                - "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${pInstallBucketPrefix}/${localPinpointFileName}  /home/oracle/${localPinpointFileName}'"
                 - { localPinpointFileName: !FindInMap [ mDotmaticsMappings, pinpoint, mZipFileName ]}
               - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/install-pinpoint /home/oracle/install-pinpoint'"
               - "su - oracle -c 'export ORACLE_HOME=/u01/app/oracle/product/12c/db_1'"
