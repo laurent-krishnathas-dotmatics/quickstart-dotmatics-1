@@ -1,0 +1,16 @@
+# @author Laurent Krishnathas
+# @year 2018
+version: '3.5'
+
+services:
+  browser:
+    volumes:
+      - /efs/config/browser:/config:z
+  bioregister:
+    volumes:
+      - /efs/config/browser:/config:z
+  oracle:
+    volumes:
+      - /efs/config/oradata:/opt/oracle/oradata
+
+

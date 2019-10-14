@@ -1,0 +1,66 @@
+
+file:
+  /root/.aws:
+    exists: false
+    filetype: directory
+  /project/browser:
+    exists: true
+    filetype: directory
+  /etc/systemd/system/browser.service:
+    exists: true
+    filetype: file
+
+port:
+  tcp:22:
+    listening: true
+    ip:
+    - 0.0.0.0
+  tcp6:22:
+    listening: true
+    ip:
+    - '::'
+service:
+  sshd:
+    enabled: true
+    running: true
+  docker:
+    enabled: true
+    running: true
+  browser:
+    enabled: false
+    running: false
+user:
+  sshd:
+    exists: true
+    uid: 74
+    gid: 74
+    groups:
+    - sshd
+    home: /var/empty/sshd
+    shell: /sbin/nologin
+group:
+  sshd:
+    exists: true
+    gid: 74
+process:
+  sshd:
+    running: true
+
+# //TODO mounting test
+#mount:
+#  /mnt/nfs:
+#    exists: true
+#    opts:
+#    - rw
+#    - nodev
+#    - noexec
+#    - relatime
+#    source: vip-nfs.stardata.lan:/data/nfs
+#    filesystem: nfs
+
+#/ebs/browser/config/dotmatics.license.txt:
+#  # required attributes
+#  exists: true
+#  # optional attributes
+#  filetype: symlink # file, symlink, directory
+#  linked-to: /usr/local/tomcat/webapps...

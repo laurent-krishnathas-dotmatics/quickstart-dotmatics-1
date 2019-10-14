@@ -1,0 +1,31 @@
+gossfile:
+  goss-base.yaml: {}
+
+port:
+  tcp:22:
+    listening: false
+    ip: []
+  tcp:80:
+    listening: false
+    ip: []
+  tcp:443:
+    listening: false
+    ip: []
+  tcp:8080:
+    listening: true
+    ip:
+    - 0.0.0.0
+  tcp:8081:
+    listening: false
+    ip: []
+process:
+  java:
+    running: true
+
+#http:
+#  http://localhost:8090/status:
+#    status: 200
+#    allow-insecure: false
+#    no-follow-redirects: false
+#    timeout: 5000
+#    body: []

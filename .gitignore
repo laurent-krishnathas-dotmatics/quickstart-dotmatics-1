@@ -1,1 +1,4 @@
 .idea
+.terraform
+infra/target/
+infra/target/*
