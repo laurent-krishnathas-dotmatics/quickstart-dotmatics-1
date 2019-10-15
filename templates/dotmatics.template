@@ -677,10 +677,9 @@ Resources:
           chown root:root /etc/systemd/system/browser.service
 
 
-          #curl -fsSL https://goss.rocks/install |  sh
-          #docker ps
-          #/usr/local/bin/goss -g  /project/browser/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
-          #echo "GOSS validate Success"
+          curl -fsSL https://goss.rocks/install | sh
+          /usr/local/bin/goss -g  /project/browser/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
+          echo "GOSS validate Success"
 
 
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
