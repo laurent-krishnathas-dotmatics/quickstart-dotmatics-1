@@ -17,24 +17,27 @@ clean:
 ENV=development
 BRO_STACK_NAME=browser-$(ENV)
 SERVICE=SERVICE_not_defined
+
+TOMCAT_TAG=dotmatics
 TOMCAT_TAR_FILE=$(shell ls docker/image/tomcat/apache*.tar.gz)
+
 BIOREGISTER_WAR=$(shell ls /efs/config/browser/bioregister-*.war)
 BIOREGISTER_GROOVY=/efs/config/browser/bioregister.groovy
 
 
 build_tomcat_images:
 	echo TOMCAT_TAR_FILE=$(TOMCAT_TAR_FILE)
-	docker build --tag=dotmatics-devops/tomcat:latest --build-arg TOMCAT_TAR_FILE=$(TOMCAT_TAR_FILE) --rm=false -f docker/image/tomcat/Dockerfile .
+	docker build --tag=tomcat:$(TOMCAT_TAG) --build-arg TOMCAT_TAR_FILE=$(TOMCAT_TAR_FILE) --rm=false -f docker/image/tomcat/Dockerfile .
 
 build_docker_images: build_tomcat_images
-	docker build --tag=dotmatics-devops/browser:latest     --rm=false -f docker/image/browser/Dockerfile .
-	docker build --tag=dotmatics-devops/bioregister:latest --rm=false -f docker/image/bioregister/Dockerfile .
+	docker build --tag=browser:latest     --rm=false -f docker/image/browser/Dockerfile .
+	docker build --tag=bioregister:latest --rm=false -f docker/image/bioregister/Dockerfile .
 
 dgoss_run: build_docker_images
-	GOSS_FILES_PATH=docker/image/browser/goss GOSS_SLEEP=15 dgoss run dotmatics-devops/browser:latest
+	GOSS_FILES_PATH=docker/image/browser/goss GOSS_SLEEP=15 dgoss run browser:latest
 
 dgoss_edit: build_docker_images
-	GOSS_FILES_PATH=docker/image/browser/goss dgoss edit dotmatics-devops/browser:latest
+	GOSS_FILES_PATH=docker/image/browser/goss dgoss edit browser:latest
 
 stack_create_network:
 	docker network create -d overlay --attachable bro_ft_end || true
