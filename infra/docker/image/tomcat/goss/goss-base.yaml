@@ -3,9 +3,6 @@ command:
     exit-status: 0
     stdout: []
     stderr:
-    - openjdk version "1.8.0_222"
-    - OpenJDK Runtime Environment (build 1.8.0_222-b10)
-    - OpenJDK 64-Bit Server VM (build 25.222-b10, mixed mode)
     timeout: 10000
 
 file:
@@ -16,7 +13,7 @@ file:
     group: root
     filetype: file
     contains: []
-
+#TODO remove any debug tools to avoid unnessary vulnerablities
   /usr/bin/vim:
     exists: true
     mode: "0755"

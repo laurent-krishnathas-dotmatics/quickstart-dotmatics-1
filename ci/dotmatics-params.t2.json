@@ -65,7 +65,7 @@
   },
   {
     "ParameterKey": "pInstallBucketName",
-    "ParameterValue": "quickstart-test-dotmatics-devops-v2"
+    "ParameterValue": "devspacepaul"
   },
   {
     "ParameterKey": "pInstallBucketPrefix",

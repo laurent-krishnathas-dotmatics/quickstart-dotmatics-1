@@ -9,8 +9,4 @@ services:
   bioregister:
     volumes:
       - /efs/config/browser:/config:z
-#  oracle:
-#    volumes:
-#      - /efs/config/oradata:/opt/oracle/oradata
-
 

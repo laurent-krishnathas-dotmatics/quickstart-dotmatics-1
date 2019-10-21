@@ -1,3 +1,4 @@
+#TODO find a meaningfull local image name, also tomcat version
 FROM dotmatics-devops/tomcat:latest
 
 WORKDIR $CATALINA_HOME
@@ -8,6 +9,7 @@ ENV BROWSER_ZIP_FILE /config/browser-install*.zip
 ENV BIOREGISTER_WAR_FILE /config/bioregister*.war
 ENV BIOREGISTER_GROOVY /config/bioregister.groovy
 
+#TODO replace with GOSS
 HEALTHCHECK --interval=60s --timeout=60s --retries=4 CMD curl --fail http://127.0.0.1:8080/bioregister/ || exit 1
 
 COPY docker/image/bioregister/docker-entrypoint.bash /docker-entrypoint.bash

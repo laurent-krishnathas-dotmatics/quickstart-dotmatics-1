@@ -1,10 +1,12 @@
 #!/bin/bash
-# @author Laurent Krishnathas
-# @year 2018
+# @author Lucas Ko
+# @year 2019
 
 set -e
 set -u
 set -x
+
+#TODO use dependancy on browser container than sleep
 
 
 #  Waiting for oracle database

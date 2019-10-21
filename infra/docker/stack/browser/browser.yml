@@ -40,12 +40,12 @@ services:
     networks:
       - bro_ft_end
 
+# TODO do not overide heathcheck
+
   browser:
-#    links:
-#      - oracle
     image: dotmatics-devops/browser:latest
     environment:
-    - JAVA_OPTS=-Xmx1500m -Duser.timezone=UTC
+    - JAVA_OPTS=-Duser.timezone=UTC
     labels:
     - "traefik.backend.loadbalancer.sticky=true"
     - "traefik.docker.network=bro_ft_end"
@@ -62,11 +62,9 @@ services:
     - bro_bk_end
 
   bioregister:
-#    links:
-#      - oracle
     image: dotmatics-devops/bioregister:latest
     environment:
-      - JAVA_OPTS=-Xmx1500m -Duser.timezone=UTC
+      - JAVA_OPTS=-Duser.timezone=UTC
       - SLEEP_TIME=60
     labels:
       - "traefik.backend.loadbalancer.sticky=true"
@@ -82,9 +80,3 @@ services:
     networks:
       - bro_ft_end
       - bro_bk_end
-#
-#  oracle:
-#    image: 101999902141.dkr.ecr.eu-west-1.amazonaws.com/dotmatics-devops/oracledatabase:18.4.0-xe.1.2.3_pinpoint_2.4.2_78764
-#    networks:
-#      - bro_ft_end
-#      - bro_bk_end

@@ -5,7 +5,7 @@
     },
     {
         "ParameterKey": "pEC2KeyPair",
-        "ParameterValue": "devops-prod"
+        "ParameterValue": "paulu-hclscollab-taskcat"
     },
     {
         "ParameterKey": "pPrivateSubnet1CIDR",
@@ -37,7 +37,7 @@
     },
     {
         "ParameterKey": "QSS3BucketName",
-        "ParameterValue": "quickstart-test-dotmatics-devops-v2"
+        "ParameterValue": "$[taskcat_autobucket]"
     },
     {
         "ParameterKey": "QSS3KeyPrefix",
@@ -61,7 +61,7 @@
     },
     {
         "ParameterKey": "pInstallBucketName",
-        "ParameterValue": "quickstart-test-dotmatics-devops-v2"
+        "ParameterValue": "devspacepaul"
     },
     {
         "ParameterKey": "pInstallBucketPrefix",
