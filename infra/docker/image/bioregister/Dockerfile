@@ -1,5 +1,4 @@
-#TODO find a meaningfull local image name, also tomcat version
-FROM dotmatics-devops/tomcat:latest
+FROM tomcat:dotmatics
 
 WORKDIR $CATALINA_HOME
 

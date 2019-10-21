@@ -6,19 +6,6 @@ set -e
 set -u
 set -x
 
-#TODO use dependancy on browser container than sleep
-
-
-#  Waiting for oracle database
-if [ -z "${SLEEP_TIME:-}" ]; then
-    echo 'SLEEP_TIME' is not set
-else
-    echo "SLEEP_TIME is $SLEEP_TIME sec"
-    date
-    echo "Start sleeping for waiting oracle database initialization..."
-    sleep $SLEEP_TIME
-    date
-fi
 
 if [ -d "/config" ]; then
     ls -la /config

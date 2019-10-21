@@ -1,4 +1,4 @@
-FROM dotmatics-devops/tomcat:latest
+FROM tomcat:dotmatics
 
 WORKDIR $CATALINA_HOME
 

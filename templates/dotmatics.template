@@ -647,18 +647,32 @@ Resources:
         - |
           #!/bin/sh
 
+
           set -x
 
-          yum update -y
-          yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+          echo "Version: 2019.10.21"
+          date
+          uname -a
+          cat /etc/os-release
+          whoami
+
+
+          yum update -y -q
+          yum install  -q  -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
           systemctl enable amazon-ssm-agent
           systemctl start amazon-ssm-agent
           systemctl status amazon-ssm-agent
 
 
+          echo "S3 Bucket Info"
+          aws s3 ls s3://${QSS3BucketName}/
+          aws s3 ls s3://${QSS3BucketName}/${QSS3KeyPrefix}
+          aws s3 ls s3://${pInstallBucketName}/
+          aws s3 ls s3://${pInstallBucketName}/${pInstallBucketPrefix}/
 
-          yum install -y  gem tmux tree wget ntp unzip vim tzdata python-pip
-          yum install  amazon-linux-extras install docker -y
+
+          yum install -y -q  gem tmux tree wget ntp unzip vim tzdata python-pip
+          yum install -y -q  amazon-linux-extras install docker
           usermod -a -G docker ec2-user
           systemctl enable docker
           systemctl start docker
@@ -669,8 +683,7 @@ Resources:
           chmod -R 755 /project/browser
           aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}infra/ /project/browser/ --recursive --quiet
           chown -R ec2-user:ec2-user /project
-          ls -ls /project/browser/
-
+          ls -lsa  /project/browser/
 
           mv /project/browser/infrastructor/templates/browser.service.tmpl /etc/systemd/system/browser.service
           chmod 644 /etc/systemd/system/browser.service
@@ -684,17 +697,17 @@ Resources:
 
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
           python get-pip.py
-
-          pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+          pip install -q https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
           /usr/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets MountConfig --region ${AWS::Region}
           crontab /home/ec2-user/crontab
 
 
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "bioregister.groovy" --quiet
+          ls -lsa  /efs/config/browser
 
           if [  -f '/efs/config/browser/bioregister.groovy' ]
               then
-                  echo "bioregister.groovy exists."
+                  echo "bioregister.groovy exists,then update ServerURL and oracle host."
                   sed -i 's/localhost/${rApplicationLoadBalancer.DNSName}/g'  /efs/config/browser/bioregister.groovy
                   sed -i 's/oracle_host/${rOracleStack.Outputs.PrivateDNSName}/g'  /efs/config/browser/bioregister.groovy
               else
@@ -732,7 +745,7 @@ Resources:
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "browser-install-*.zip" --quiet
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "bioregister-*.war" --quiet
 
-          ls -ls /efs/config/browser/
+          ls -lsa /efs/config/browser/
 
           docker swarm init
 
@@ -741,16 +754,40 @@ Resources:
           sleep 5
           systemctl status browser.service
 
+          docker version
+          docker service ls
+
+          echo "Finished installation."
+
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
         - { databasePort: !FindInMap [ mDotmaticsMappings, database, port]}
   ###
   ### App Server Roles
   ###
 
+
+  rAppS3FullAccess:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Sid: AllowAppAccessS3
+              Effect: Allow
+              Action:
+                - "s3:*"
+              Resource:
+                - !Sub "arn:aws:s3:::${QSS3BucketName}"
+                - !Sub "arn:aws:s3:::${QSS3BucketName}/*"
+                - !Sub "arn:aws:s3:::${pInstallBucketName}"
+                - !Sub "arn:aws:s3:::${pInstallBucketName}/*"
+
   rAppServerRole:
     Type: AWS::IAM::Role
     Properties:
-      ManagedPolicyArns: ["arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM","arn:aws:iam::aws:policy/AmazonS3FullAccess"]
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+        - !Ref rAppS3FullAccess
       AssumeRolePolicyDocument:
         Statement:
         - Effect: Allow

@@ -43,7 +43,7 @@ services:
 # TODO do not overide heathcheck
 
   browser:
-    image: dotmatics-devops/browser:latest
+    image: browser:latest
     environment:
     - JAVA_OPTS=-Duser.timezone=UTC
     labels:
@@ -62,10 +62,11 @@ services:
     - bro_bk_end
 
   bioregister:
-    image: dotmatics-devops/bioregister:latest
+    image: bioregister:latest
+    depends_on:
+      - browser
     environment:
       - JAVA_OPTS=-Duser.timezone=UTC
-      - SLEEP_TIME=60
     labels:
       - "traefik.backend.loadbalancer.sticky=true"
       - "traefik.docker.network=bro_ft_end"
