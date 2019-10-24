@@ -31,14 +31,6 @@ file:
   /usr/local/tomcat/webapps/manager/:
     exists: false
 
-#package:  # package was not working on centos because it only supports rpm,deb,apk,pacman
-#  curl:
-#    installed: true
-#  vim:
-#    installed: true
-#  unzip:
-#    installed: true
-
 service:
   sshd:
     enabled: false

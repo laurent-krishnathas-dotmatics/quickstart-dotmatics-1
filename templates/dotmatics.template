@@ -670,7 +670,7 @@ Resources:
           aws s3 ls s3://${pInstallBucketName}/${pInstallBucketPrefix}/
 
 
-          yum install -y -q  gem tmux tree wget ntp unzip vim tzdata python-pip
+          yum install -y -q  gem tmux tree wget ntp unzip tzdata python-pip
           yum install -y -q  amazon-linux-extras install docker
           usermod -a -G docker ec2-user
           systemctl enable docker

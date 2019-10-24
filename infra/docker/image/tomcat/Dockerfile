@@ -1,6 +1,6 @@
 FROM centos:7.6.1810
 RUN  yum update -y && \
-     yum install java-1.8.0-openjdk  unzip vim glibc.i686 -y
+     yum install java-1.8.0-openjdk  unzip  glibc.i686 -y
 
 
 ENV CATALINA_HOME /usr/local/tomcat

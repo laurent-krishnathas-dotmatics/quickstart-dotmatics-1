@@ -28,8 +28,6 @@ group:
 package:
   curl:
     installed: true
-  vim:
-    installed: true
 port:
   tcp:8080:
     listening: true
