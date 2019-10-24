@@ -11,6 +11,17 @@ if [ -d "/config" ]; then
     ls -la /config
 fi
 
+#  Waiting for browser
+if [ -z "${SLEEP_TIME:-}" ]; then
+    echo 'SLEEP_TIME' is not set
+else
+    echo "SLEEP_TIME is $SLEEP_TIME sec"
+    date
+    echo "Start sleeping for waiting browser get ready ..."
+    sleep $SLEEP_TIME
+    date
+fi
+
 
 SRC_FILE=$BROWSER_PROP_FILE
 FILE=browser.properties
