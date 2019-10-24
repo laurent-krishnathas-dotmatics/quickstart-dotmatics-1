@@ -1,6 +1,4 @@
 # quickstart-dotmatics
-
-# quickstart-dotmatics
 ## Dotmatics Suite on AWS
 
 This Quick Start deploys the Dotmatics suite of informatics products on the Amazon Web Services (AWS) Cloud.
