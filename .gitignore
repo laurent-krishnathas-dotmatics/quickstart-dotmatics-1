@@ -2,3 +2,4 @@
 .terraform
 infra/target/
 infra/target/*
+.DS_Store
