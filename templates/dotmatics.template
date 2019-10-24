@@ -53,7 +53,7 @@ Metadata:
         default: AWS QuickStart Configuration
       Parameters:
       - QSS3BucketName
-      - QSS3KeyPrefix      
+      - QSS3KeyPrefix
     ParameterLabels:
       pCreateTLSCert:
         default: Create a TLS Certificate for the Load Balancer?
@@ -103,7 +103,7 @@ Metadata:
         default: Internal DNS Apex Domain
       pDnsHostedZoneID:
         default: Internal DNS hosted zone ID
-      pDNSName: 
+      pDNSName:
         default: Dotmatics Server DNS Name
       pEC2KeyPair:
         default: Key Pair for Dotmatics Web and Database Server
@@ -119,7 +119,7 @@ Metadata:
         default: Quick Start S3 Key Prefix
       QSS3BucketName:
         default: Quick Start S3 Bucket Name
-       
+
 Parameters:
   pCreateTLSCert:
     AllowedValues:
@@ -249,7 +249,7 @@ Parameters:
     Description: Dotmatics app server EC2 instance type
     Type: String
     Default: t2.large
-    AllowedValues: 
+    AllowedValues:
       - t2.medium
       - t2.large
       - t2.xlarge
@@ -260,10 +260,10 @@ Parameters:
       - m4.xlarge
       - m4.2xlarge
   pAppSubnetA:
-    Description: Production App Subnet A. Target subnet for the app server. 
+    Description: Production App Subnet A. Target subnet for the app server.
     Type: AWS::EC2::Subnet::Id
   pAppSubnetB:
-    Description: Production App Subnet B. Target subnet for the app server. 
+    Description: Production App Subnet B. Target subnet for the app server.
     Type: AWS::EC2::Subnet::Id
   pDatabasePass:
     AllowedPattern: "([A-Za-z0-9_#$]{3,30})"
@@ -281,10 +281,10 @@ Parameters:
     Description: Subnet ID for Production DB Subnet B.
     Type: AWS::EC2::Subnet::Id
   pDmzSubnetA:
-    Description: Production DMZ Subnet A. Target subnet for the app server. 
+    Description: Production DMZ Subnet A. Target subnet for the app server.
     Type: AWS::EC2::Subnet::Id
   pDmzSubnetB:
-    Description: Production DMZ Subnet B. Target subnet for the app server. 
+    Description: Production DMZ Subnet B. Target subnet for the app server.
     Type: AWS::EC2::Subnet::Id
   pDnsHostedZoneApexDomain:
     Description: (Optional) Internal DNS Apex Domain
@@ -296,11 +296,11 @@ Parameters:
     Default: ""
   pEC2KeyPair:
     Description: Key Name for app and db server.
-    Type: AWS::EC2::KeyPair::KeyName  
+    Type: AWS::EC2::KeyPair::KeyName
   pLoadBalancerType:
     Default: internet-facing
     Type: String
-    AllowedValues: 
+    AllowedValues:
       - internet-facing
       - internal
   pSecurityGroupForWebAccess:
@@ -310,7 +310,7 @@ Parameters:
   pWebAccessCIDR:
     Description: Will only be used if Web Access Security Group is not specified. Enter 0.0.0.0/0 if you want to open it to the world.
     Type: String
-    Default: "10.0.0.0/16"    
+    Default: "10.0.0.0/16"
   pVpcId:
     Description: VPC ID
     Type: AWS::EC2::VPC::Id
@@ -333,17 +333,13 @@ Parameters:
       forward slash (/).
     Default: quickstart-dotmatics/
     Type: String
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
 
 Mappings:
-  AWSAMIRegionMap:
-    us-east-1:
-      mAppServerAMI: ami-00f32687ee1581e79
-    us-west-2:
-      mAppServerAMI: ami-0750c572da8f05867
-    eu-west-1:
-      mAppServerAMI: ami-0eb3ee932692b9222
   mDotmaticsMappings:
-    pinpoint: 
+    pinpoint:
       mZipFileName: pinpoint_2.4_38010.zip
     database:
       port: 1521
@@ -368,15 +364,15 @@ Resources:
       HostedZoneId: !Ref pDnsHostedZoneID
       Comment: Internal DNS CNAME for Dotmatics.
       Name: !Sub ${pDNSName}.${pDnsHostedZoneApexDomain}
-      Type: CNAME 
-      TTL: 60
+      Type: CNAME
+      TTL: "60"
       ResourceRecords:
         - !GetAtt rApplicationLoadBalancer.DNSName
 
   rALBCertificate:
     Type: "AWS::CertificateManager::Certificate"
     Condition: cCreateTLSCert
-    Properties: 
+    Properties:
       DomainName: !Sub ${pDNSName}.${pDnsHostedZoneApexDomain}
       DomainValidationOptions:
       - DomainName: !Sub ${pDNSName}.${pDnsHostedZoneApexDomain}
@@ -402,20 +398,20 @@ Resources:
       ToPort: 80
       SourceSecurityGroupId: !Ref rSecurityGroupAlbs
 
-  
-  
-  rSecurityGroupAlbWithSG: 
+
+
+  rSecurityGroupAlbWithSG:
     Type: AWS::EC2::SecurityGroup
     Condition: cWebAccessSG
-    Properties: 
+    Properties:
       GroupDescription: Allow access to Dotmatics ALBs. Open to SG.
       VpcId: !Ref pVpcId
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: !If [ cCreateTLSCert, '443', '80' ]
-        ToPort: !If [ cCreateTLSCert, '443', '80' ]
+        FromPort: !If [ cCreateTLSCert, 443, 80 ]
+        ToPort: !If [ cCreateTLSCert, 443, 80 ]
         SourceSecurityGroupId: !Ref pSecurityGroupForWebAccess
-      Tags: 
+      Tags:
       - Key: Name
         Value: sg-dotmatics-access-ports-to-alb-bysg
   rSecurityGroupAlbNoSG:
@@ -426,8 +422,8 @@ Resources:
       VpcId: !Ref pVpcId
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: !If [ cCreateTLSCert, '443', '80' ]
-        ToPort: !If [ cCreateTLSCert, '443', '80' ]
+        FromPort: !If [ cCreateTLSCert, 443, 80 ]
+        ToPort: !If [ cCreateTLSCert, 443, 80 ]
         CidrIp: !Ref pWebAccessCIDR
       Tags:
       - Key: Name
@@ -443,7 +439,7 @@ Resources:
   rSecurityGroupDB:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow access to Dotmatics DB from Dotmatics App Server or other integration points 
+      GroupDescription: Allow access to Dotmatics DB from Dotmatics App Server or other integration points
       VpcId: !Ref pVpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -474,25 +470,25 @@ Resources:
     Condition: cSkipTLSCert
     Properties:
         LoadBalancerArn: !Ref rApplicationLoadBalancer
-        Port: '80' 
+        Port: 80
         Protocol: 'HTTP'
-        DefaultActions: 
+        DefaultActions:
             - Type: forward
               TargetGroupArn: !Ref rLoadBalancerTargetGroup
-      
+
   rLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Condition: cCreateTLSCert
     Properties:
-        Certificates : 
+        Certificates :
             - CertificateArn: !Ref rALBCertificate
         LoadBalancerArn: !Ref rApplicationLoadBalancer
-        Port: '443'
+        Port: 443
         Protocol: 'HTTPS'
-        DefaultActions: 
+        DefaultActions:
             - Type: forward
               TargetGroupArn: !Ref rLoadBalancerTargetGroup
-  
+
   rLoadBalancerTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -501,13 +497,13 @@ Resources:
         Port: 80
         HealthCheckIntervalSeconds: 180
         HealthCheckTimeoutSeconds: 30
-        HealthyThresholdCount: 2  
-        HealthCheckPort: 80
+        HealthyThresholdCount: 2
+        HealthCheckPort: '80'
         UnhealthyThresholdCount: 10
         Protocol: HTTP
-        Matcher: 
+        Matcher:
           HttpCode: '200,302,402'
-  
+
 
 
   ###
@@ -527,24 +523,24 @@ Resources:
         - !Ref pAppSubnetA
         - !Ref pAppSubnetB
       LaunchConfigurationName: !Ref rAutoScalingConfigApp
-      MinSize: 1
-      MaxSize: 1
+      MinSize: '1'
+      MaxSize: '1'
       HealthCheckType: ELB
       HealthCheckGracePeriod: 300
       Tags:
         - Key: Name
           Value: "Dotmatics App Server"
           PropagateAtLaunch: true
-          
+
   rBastionSecurityGroupToOracleServer:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for bastions to allow SSH access to Dotmatics.
       VpcId: !Ref pVpcId
-      Tags: 
+      Tags:
       - Key: Name
-        Value: sg-dotmatics-database-access-to-22        
-          
+        Value: sg-dotmatics-database-access-to-22
+
   rAutoScalingConfigApp:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
@@ -559,7 +555,7 @@ Resources:
               nfs-utils: []
               unzip: []
           files:
-            "/home/centos/post_nfsstat":
+            "/home/ec2-user/post_nfsstat":
               content: !Sub |
                 #!/bin/bash
 
@@ -620,12 +616,12 @@ Resources:
                 # submit whatever is left
                 aws cloudwatch put-metric-data --region ${AWS::Region} --cli-input-json "`echo $CW_JSON_OPEN ${!CW_JSON_METRIC%?} $CW_JSON_CLOSE`"
               mode: '000755'
-              owner: centos
-              group: centos
+              owner: ec2-user
+              group: ec2-user
             "/home/ec2-user/crontab":
               content: "* * * * * /usr/sbin/nfsstat | /home/ec2-user/post_nfsstat\n"
-              owner: centos
-              group: centos
+              owner: ec2-user
+              group: ec2-user
           commands:
             01_createdir:
               command: !Sub "mkdir /efs"
@@ -635,70 +631,173 @@ Resources:
               command: !Sub >
                 mount -t nfs4 -o nfsvers=4.1 ${rFilesystem}.efs.${AWS::Region}.amazonaws.com:/ /efs
             02_permissions:
-              command: !Sub "chown centos:centos /efs"
+              command: !Sub "chown ec2-user:ec2-user /efs"
     DependsOn:
     - rOracleStack
     Properties:
       IamInstanceProfile: !Ref rAppServerInstanceProfile
-      ImageId: !FindInMap [ AWSAMIRegionMap, !Ref "AWS::Region", mAppServerAMI ]
+      ImageId: !Ref LatestAmiId
       InstanceType: !Ref pAppServerInstanceType
       KeyName: !Ref pEC2KeyPair
       SecurityGroups:
       - !Ref rSecurityGroupAppServers
       - !GetAtt rOracleStack.Outputs.OracleServerAccessSecurityGroup
       UserData:
-        Fn::Base64: !Sub 
+        Fn::Base64: !Sub
         - |
           #!/bin/sh
-          
-          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-          python get-pip.py
-          
-          pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-          /usr/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets MountConfig --region ${AWS::Region}
-          crontab /home/ec2-user/crontab
-      
-          if [ ! -f '/efs/config/browser/browser.properties' ]
-          then
-              sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=${databasePort}))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /ebs/config/browser/browser.properties 
-              sed -i '/^db.server/s/=.*$/=${rOracleStack.Outputs.PrivateDNSName}/' /ebs/config/browser/browser.properties 
-              sed -i '/^db.dba.password/s/=.*$/=${pDatabasePass}/' /ebs/config/browser/browser.properties
-              sed -i '/^db.sid/s/=.*$/=${pDatabaseName}/' /ebs/config/browser/browser.properties 
-              sed -i '/^updates.setting/s/=.*$/=new/' /ebs/config/browser/browser.properties 
-              
-              if [ '${pDnsHostedZoneID}' = '' ]
-                then
-                  sed -i '/^app.browserurl/s/=.*$/=http:\/\/${rApplicationLoadBalancer.DNSName}/' /ebs/config/browser/browser.properties 
-                else 
-                  sed -i '/^app.browserurl/s/=.*$/=https:\/\/${pDNSName}.${pDnsHostedZoneApexDomain}/' /ebs/config/browser/browser.properties 
-              fi
-              
-              cp -Rp /ebs/config /efs/config/
-          fi
-          
-          sed -i 's/ebs/efs/g' /project/browser/docker/stack/browser/browser-production.yml
-          rm -rf /efs/config/browser/browser-install*
-          rm -rf /efs/config/browser/dotmatics.license.txt
-          aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt  /efs/config/browser/dotmatics.license.txt
-          aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "browser-install-*.zip"
+          set -x
 
-          systemctl stop browser.service
-          systemctl start browser.service
-          
-          yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+          echo "script version: 2019.10.24 10:00am"
+          date
+          uname -a
+          id
+          cat /etc/os-release
+          whoami
+
+
+          yum update -y -q
+          yum install  -q  -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
           systemctl enable amazon-ssm-agent
           systemctl start amazon-ssm-agent
+          systemctl status amazon-ssm-agent
 
-          /usr/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
+
+          echo "S3 Bucket Info"
+          aws s3 ls s3://${QSS3BucketName}/
+          aws s3 ls s3://${QSS3BucketName}/${QSS3KeyPrefix}
+          aws s3 ls s3://${pInstallBucketName}/
+          aws s3 ls s3://${pInstallBucketName}/${pInstallBucketPrefix}/
+
+
+          yum install -y -q  gem tmux tree wget ntp unzip vim tzdata python-pip
+          yum install -y -q  amazon-linux-extras install docker
+          usermod -a -G docker ec2-user
+          systemctl enable docker
+          systemctl start docker
+          docker version
+
+
+          mkdir -p /project/browser
+          chmod -R 755 /project/browser
+          aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}infra/ /project/browser/ --recursive --quiet
+          chown -R ec2-user:ec2-user /project
+          ls -lsa  /project/browser/
+
+          mv /project/browser/infrastructor/templates/browser.service.tmpl /etc/systemd/system/browser.service
+          chmod 644 /etc/systemd/system/browser.service
+          chown root:root /etc/systemd/system/browser.service
+
+
+          #curl -fsSL https://goss.rocks/install | sh
+          #/usr/local/bin/goss -g  /project/browser/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
+          #echo "GOSS validate Success"
+
+
+          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+          python get-pip.py
+          pip install -q https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+          /usr/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets MountConfig --region ${AWS::Region}
+          crontab /home/ec2-user/crontab
+
+
+          aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "bioregister.groovy" --quiet
+          ls -lsa  /efs/config/browser
+
+          if [  -f '/efs/config/browser/bioregister.groovy' ]
+              then
+                  echo "bioregister.groovy exists,then update ServerURL and oracle host."
+                  sed -i 's/localhost/${rApplicationLoadBalancer.DNSName}/g'  /efs/config/browser/bioregister.groovy
+                  sed -i 's/oracle_host/${rOracleStack.Outputs.PrivateDNSName}/g'  /efs/config/browser/bioregister.groovy
+              else
+                  echo "bioregister.groovy doesn't exist,then bioregister will not be launched."
+          fi
+
+          if [ ! -f '/efs/config/browser/browser.properties' ]
+          then
+              echo "Not found browser.properties. Start downloading."
+              aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/browser.properties  /efs/config/browser/browser.properties --quiet
+
+              if [  -f '/efs/config/browser/browser.properties' ]; then
+                    echo 'downloaded browser.properties.'
+                else
+                    echo '[ERROR] browser.properties not found, please check it whether you upload browser.properties to s3 or not.'
+              fi
+
+              sed -i '/^db.description/s/=.*$/=(DESCRIPTION\\=(ADDRESS\\=(PROTOCOL\\=TCP)(HOST\\=${rOracleStack.Outputs.PrivateDNSName})(PORT\\=${databasePort}))(CONNECT_DATA\\=(SERVICE_NAME\\=${pDatabaseName})) )/' /efs/config/browser/browser.properties
+              sed -i '/^db.server/s/=.*$/=${rOracleStack.Outputs.PrivateDNSName}/' /efs/config/browser/browser.properties
+              sed -i '/^db.dba.password/s/=.*$/=${pDatabasePass}/' /efs/config/browser/browser.properties
+              sed -i '/^db.sid/s/=.*$/=${pDatabaseName}/' /efs/config/browser/browser.properties
+              sed -i '/^updates.setting/s/=.*$/=new/' /efs/config/browser/browser.properties
+
+              if [ '${pDnsHostedZoneID}' = '' ]
+                then
+                  echo "pDnsHostedZoneID is empty."
+                  sed -i '/^app.browserurl/s/=.*$/=http:\/\/${rApplicationLoadBalancer.DNSName}/' /efs/config/browser/browser.properties
+                else
+                  echo "pDnsHostedZoneID is not empty."
+                  sed -i '/^app.browserurl/s/=.*$/=https:\/\/${pDNSName}.${pDnsHostedZoneApexDomain}/' /efs/config/browser/browser.properties
+              fi
+          else:
+              echo "browser.properties exists."
+          fi
+
+          rm -rf /efs/config/browser/browser-install*
+          rm -rf /efs/config/browser/dotmatics.license.txt
+
+          echo "Downloading war/zip files."
+          aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt  /efs/config/browser/dotmatics.license.txt --quiet
+          aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "browser-install-*.zip" --quiet
+          aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "bioregister-*.war" --quiet
+
+          ls -lsa /efs/config/browser/
+
+
+          if [  -f '/efs/config/browser/dotmatics.license.txt' ]; then
+              echo 'dotmatics.license.txt does exist.'
+          else
+              echo '[ERROR] dotmatics.license.txt not found '
+          fi
+
+          docker swarm init
+          systemctl stop browser.service
+          systemctl start browser.service
+          sleep 5
+          systemctl status browser.service
+
+          docker version
+          docker service ls
+          echo "Finished installation."
+
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
         - { databasePort: !FindInMap [ mDotmaticsMappings, database, port]}
   ###
   ### App Server Roles
   ###
-  
+
+
+  rAppS3FullAccess:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Sid: AllowAppAccessS3
+              Effect: Allow
+              Action:
+                - "s3:*"
+              Resource:
+                - !Sub "arn:aws:s3:::${QSS3BucketName}"
+                - !Sub "arn:aws:s3:::${QSS3BucketName}/*"
+                - !Sub "arn:aws:s3:::${pInstallBucketName}"
+                - !Sub "arn:aws:s3:::${pInstallBucketName}/*"
+
   rAppServerRole:
     Type: AWS::IAM::Role
     Properties:
-      ManagedPolicyArns: ["arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"]
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+        - !Ref rAppS3FullAccess
       AssumeRolePolicyDocument:
         Statement:
         - Effect: Allow
@@ -708,7 +807,7 @@ Resources:
           Action:
           - sts:AssumeRole
       Path: "/"
-  
+
   rCloudWatchPutMetricsRolePolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -722,7 +821,7 @@ Resources:
           - cloudwatch:PutMetricData
           Resource:
           - "*"
-      Roles: 
+      Roles:
       - !Ref rAppServerRole
 
   rAppServerInstanceProfile:
@@ -740,7 +839,7 @@ Resources:
     Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: !Ref rFilesystem
-      SubnetId: !Ref pAppSubnetA 
+      SubnetId: !Ref pAppSubnetA
       SecurityGroups:
       - Ref: rEfsMountTargetSecurityGroup
 
@@ -748,10 +847,10 @@ Resources:
     Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: !Ref rFilesystem
-      SubnetId: !Ref pAppSubnetB 
+      SubnetId: !Ref pAppSubnetB
       SecurityGroups:
       - Ref: rEfsMountTargetSecurityGroup
-      
+
   rEfsMountTargetSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -759,9 +858,9 @@ Resources:
       GroupDescription: Security group for Dotmatics app server mount target
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: '2049'
-        ToPort: '2049'
-        SourceSecurityGroupId: !Ref rSecurityGroupAppServers    
+        FromPort: 2049
+        ToPort: 2049
+        SourceSecurityGroupId: !Ref rSecurityGroupAppServers
 
   rFilesystem:
     Type: AWS::EFS::FileSystem
@@ -790,14 +889,14 @@ Resources:
   ###
   ### DB Instance
   ###
-  
+
   ### Pinpoint Install SSM Command Doc
   ### Note that the oracle quickstart, on which the association depends, grants access to the QSS3BucketName/QSS3KeyPrefix bucket to download the required files.
-  pInstallPinpointCommandDoc: 
+  pInstallPinpointCommandDoc:
     Type: "AWS::SSM::Document"
-    Properties: 
+    Properties:
       DocumentType: "Command"
-      Content: 
+      Content:
         schemaVersion: '1.2'
         description: Run Pinpoint Cartridge install on Oracle DB.
         parameters:
@@ -812,10 +911,10 @@ Resources:
           aws:runShellScript:
             properties:
             - id: 0.aws:runShellScript
-              runCommand: 
+              runCommand:
               - !Sub "su - oracle -c 'aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.pinpoint.license.txt  /home/oracle/dotmatics.pinpoint.license.txt'"
               - !Sub
-                - "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/${localPinpointFileName}  /home/oracle/${localPinpointFileName}'"
+                - "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${pInstallBucketPrefix}/${localPinpointFileName}  /home/oracle/${localPinpointFileName}'"
                 - { localPinpointFileName: !FindInMap [ mDotmaticsMappings, pinpoint, mZipFileName ]}
               - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/install-pinpoint /home/oracle/install-pinpoint'"
               - "su - oracle -c 'export ORACLE_HOME=/u01/app/oracle/product/12c/db_1'"
@@ -824,6 +923,8 @@ Resources:
               - !Sub
                 - "su - oracle -c 'sh /home/oracle/install-pinpoint /home/oracle/${localPinpointFileName} /home/oracle/dotmatics.pinpoint.license.txt'"
                 - { localPinpointFileName: !FindInMap [ mDotmaticsMappings, pinpoint, mZipFileName ]}
+              - !Sub "su - oracle -c 'aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/c2c.sql /tmp/' "
+              - !Sub "su - oracle -c 'sqlplus / as sysdba @/tmp/c2c.sql' "
               timeoutSeconds: "{{ executionTimeout }}"
 
   rPinpointInstallSsmDocAssociation:
@@ -874,7 +975,7 @@ Resources:
         StandbyIPAddress: !Ref pStandbyIPAddress
         StandbyName: !FindInMap [mDotmaticsMappings, database, StandbyName]
         VPCID: !Ref pVpcId
-        EnableCWL: 'true'  
+        EnableCWL: 'true'
 
 Outputs:
   oLoadBalancerDNS:
@@ -888,3 +989,6 @@ Outputs:
     Condition: cCreateTLSCert
     Description: URL to Load Balancer to access Dotmaics application over TLS.
     Value: !Sub https://${pDNSName}.${pDnsHostedZoneApexDomain}/browser
+
+
+

@@ -1,0 +1,4 @@
+http:
+  http://localhost:8080/bioregister:
+    status: 302
+    timeout: 30000

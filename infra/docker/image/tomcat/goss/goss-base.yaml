@@ -1,0 +1,32 @@
+command:
+  java -version:
+    exit-status: 0
+    stdout: []
+    stderr:
+    timeout: 10000
+
+file:
+  /usr/bin/curl:
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: file
+    contains: []
+#TODO remove any debug tools to avoid unnessary vulnerablities
+  /usr/bin/vim:
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: file
+    contains: []
+
+  /usr/bin/unzip:
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: file
+    contains: []
+
