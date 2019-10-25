@@ -1,0 +1,85 @@
+# @author Laurent Krishnathas
+# @year 2018
+
+version: '3.5'
+
+networks:
+  bro_ft_end:
+    external: true
+  bro_bk_end:
+    external: true
+
+services:
+  traefik:
+    image: traefik:v1.6.6
+    command: --docker --docker.watch --web --loglevel=DEBUG
+    ports:
+    - 80:80
+    - 8081:8080
+    labels:
+    - "traefik.enable=false"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+    - bro_ft_end
+
+  redirect:
+    image: golang:1.11.1-alpine3.8
+    command: go run redirect.go
+    working_dir: /code
+    environment:
+      - REDIRECT_URL=/browser
+    labels:
+      - "traefik.backend.loadbalancer.sticky=true"
+      - "traefik.docker.network=bro_ft_end"
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Path:/"
+      - "traefik.port=8080"
+    volumes:
+      - $PWD/docker/stack/browser/redirect/:/code
+    networks:
+      - bro_ft_end
+
+# TODO do not overide heathcheck
+
+  browser:
+    image: browser:latest
+    environment:
+    - JAVA_OPTS=-Duser.timezone=UTC
+    labels:
+    - "traefik.backend.loadbalancer.sticky=true"
+    - "traefik.docker.network=bro_ft_end"
+    - "traefik.enable=true"
+    - "traefik.frontend.rule=PathPrefix:/browser"
+    - "traefik.port=8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/browser"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+    networks:
+    - bro_ft_end
+    - bro_bk_end
+
+  bioregister:
+    image: bioregister:latest
+    depends_on:
+      - browser
+    environment:
+      - JAVA_OPTS=-Duser.timezone=UTC
+      - SLEEP_TIME=120
+    labels:
+      - "traefik.backend.loadbalancer.sticky=true"
+      - "traefik.docker.network=bro_ft_end"
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/bioregister"
+      - "traefik.port=8080"
+    healthcheck:
+      start_period: 180s
+      test: ["CMD", "curl", "-f", "http://localhost:8080/bioregister"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+    networks:
+      - bro_ft_end
+      - bro_bk_end

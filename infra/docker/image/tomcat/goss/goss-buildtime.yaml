@@ -1,0 +1,54 @@
+gossfile:
+  goss-base.yaml: {}
+file:
+  /usr/local/tomcat/:
+    exists: true
+    mode: "0755"
+    owner: tomcat
+    group: tomcat
+    filetype: directory
+    contains: []
+  /usr/local/tomcat/conf/server.xml:
+    exists: true
+    mode: "0644"
+    owner: tomcat
+    group: tomcat
+    filetype: file
+    contains: []
+
+  /usr/local/tomcat/webapps/ROOT/:
+    exists: false
+
+  /usr/local/tomcat/webapps/docs/:
+    exists: false
+
+  /usr/local/tomcat/webapps/examples/:
+    exists: false
+
+  /usr/local/tomcat/webapps/host-manager/:
+    exists: false
+
+  /usr/local/tomcat/webapps/manager/:
+    exists: false
+
+service:
+  sshd:
+    enabled: false
+    running: false
+  sudo:
+    enabled: false
+    running: false
+
+user:
+  tomcat:
+    exists: true
+    uid: 1000
+    gid: 1000
+    groups:
+    - tomcat
+    home: /home/tomcat
+
+group:
+  tomcat:
+    exists: true
+    gid: 1000
