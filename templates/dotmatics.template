@@ -707,8 +707,10 @@ Resources:
           if [  -f '/efs/config/browser/bioregister.groovy' ]
               then
                   echo "bioregister.groovy exists,then update ServerURL and oracle host."
-                  sed -i 's/localhost/${rApplicationLoadBalancer.DNSName}/g'  /efs/config/browser/bioregister.groovy
-                  sed -i 's/oracle_host/${rOracleStack.Outputs.PrivateDNSName}/g'  /efs/config/browser/bioregister.groovy
+                  sed -i 's/localhost:8080/${rApplicationLoadBalancer.DNSName}/g'  /efs/config/browser/bioregister.groovy
+                  sed -i 's/localhost/${rOracleStack.Outputs.PrivateDNSName}/g'  /efs/config/browser/bioregister.groovy
+                  sed -i 's/c:\\\\c2c_attachments/\/c2c_attachments/g' /efs/config/browser/bioregister.groovy
+                  sed -i 's/XE/dotmtsdb/g' /efs/config/browser/bioregister.groovy
               else
                   echo "bioregister.groovy doesn't exist,then bioregister will not be launched."
           fi
@@ -749,6 +751,8 @@ Resources:
           aws s3 cp s3://${pInstallBucketName}/${pInstallBucketPrefix}/dotmatics.license.txt  /efs/config/browser/dotmatics.license.txt --quiet
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "browser-install-*.zip" --quiet
           aws s3 sync s3://${pInstallBucketName}/${pInstallBucketPrefix}/   /efs/config/browser  --exclude "*.*" --include "bioregister-*.war" --quiet
+
+          chown -R ec2-user:ec2-user /efs/
 
           ls -lsa /efs/config/browser/
 
