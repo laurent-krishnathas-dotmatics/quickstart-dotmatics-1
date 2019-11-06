@@ -7,7 +7,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${MEM_10_PCT}
+          memory: ${TRAEFIK_LIMIT_MEM}
 
   browser:
     volumes:
@@ -15,7 +15,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${MEM_40_PCT}
+          memory: ${BROWSER_LIMIT_MEM}
 
   bioregister:
     volumes:
@@ -23,4 +23,4 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${MEM_40_PCT}
+          memory: ${BIOREGISTER_LIMIT_MEM}
