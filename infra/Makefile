@@ -51,7 +51,11 @@ create_volume_dir:
 	mkdir -p $$PWD/target/docker/volume/$(ENV)
 
 stack_deploy_browser: build_docker_images stack_create_network docker_cleanup create_volume_dir
-	STACK_NAME=$(BRO_STACK_NAME) ENV=$(ENV) docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$(ENV).yml $(BRO_STACK_NAME)
+	$(eval MEM_40_PCT=$(shell grep MemTotal /proc/meminfo | awk '{print $$2 / 1024*40/100"m"}'  ))
+	$(eval MEM_10_PCT=$(shell grep MemTotal /proc/meminfo | awk '{print $$2 / 1024*10/100"m"}'  ))
+	echo $(MEM_40_PCT) >  $$PWD/target/mem40pct
+	echo $(MEM_10_PCT) >  $$PWD/target/mem10pct
+	MEM_40_PCT=$(MEM_40_PCT)  MEM_10_PCT=$(MEM_10_PCT)	STACK_NAME=$(BRO_STACK_NAME) ENV=$(ENV) docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$(ENV).yml $(BRO_STACK_NAME)
 	make scale_down_bioregister ENV=$(ENV)
 
 stack_rm:  stack_rm_browser
