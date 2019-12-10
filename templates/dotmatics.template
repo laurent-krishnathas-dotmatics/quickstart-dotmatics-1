@@ -707,7 +707,15 @@ Resources:
           if [  -f '/efs/config/browser/bioregister.groovy' ]
               then
                   echo "bioregister.groovy exists,then update ServerURL and oracle host."
-                  sed -i 's/localhost:8080/${rApplicationLoadBalancer.DNSName}/g'  /efs/config/browser/bioregister.groovy
+
+                  if [ '${pDnsHostedZoneID}' = '' ]
+                      then
+                        echo "pDnsHostedZoneID is empty."
+                        sed -i 's/http:\/\/localhost:8080/http:\/\/${rApplicationLoadBalancer.DNSName}/g'  /efs/config/browser/bioregister.groovy
+                      else
+                        echo "pDnsHostedZoneID is not empty."
+                        sed -i 's/http:\/\/localhost:8080/https:\/\/${pDNSName}.${pDnsHostedZoneApexDomain}/g'  /efs/config/browser/bioregister.groovy
+                  fi
                   sed -i 's/localhost/${rOracleStack.Outputs.PrivateDNSName}/g'  /efs/config/browser/bioregister.groovy
                   sed -i 's/c:\\\\c2c_attachments/\/c2c_attachments/g' /efs/config/browser/bioregister.groovy
                   sed -i 's/XE/${pDatabaseName}/g' /efs/config/browser/bioregister.groovy
