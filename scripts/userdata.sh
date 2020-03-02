@@ -115,18 +115,17 @@ echo "TMP_BIOREGISTER_WAR_FILE=$TMP_BIOREGISTER_WAR_FILE"
 if [ -z "$TMP_BROWSER_ZIP_FILE" ]
 then
   echo "[ERROR] browser installation zip doesn't exist."
-  /opt/aws/bin/cfn-signal -e 1 --reason  "Not found browser installation zip file"  --stack $AWS_STACK_NAME --resource rAutoScalingGroupApp --region $AWS_REGION
+  exit 1
 
 elif [ "$TMP_BROWSER_ZIP_COUNT" -gt 1 ]
 then
   ls -ls $TMP_CONFIG_DIR
   echo "[ERROR] Too many browser installation zip files."
-  /opt/aws/bin/cfn-signal -e 1 --reason  "Too many browser installation zip files"  --stack $AWS_STACK_NAME --resource rAutoScalingGroupApp --region $AWS_REGION
+  exit 1
 
 elif [ ! -f  "$TMP_LICENSE" ]; then
   echo '[ERROR] $TMP_LICENSE not found '
-  /opt/aws/bin/cfn-signal -e 1 --reason  "Not found dotmatics.license.txt"  --stack $AWS_STACK_NAME --resource rAutoScalingGroupApp --region $AWS_REGION
-
+  exit 1
 fi
 
 
@@ -135,15 +134,14 @@ if [ -z "$TMP_BIOREGISTER_WAR_FILE" ]; then
 
 elif [ "$TMP_BIOREGISTER_WAR_COUNT" -gt 1 ] ; then
     echo "[ERROR] Too many bioregister installation zip files."
-    /opt/aws/bin/cfn-signal -e 1 --reason  "Too many bioregister installation war files"  --stack $AWS_STACK_NAME --resource rAutoScalingGroupApp --region $AWS_REGION
+    exit 1
 
 else
   if [  -f "$TMP_BIOREGISTER_GROOVY" ]; then
       echo "$TMP_BIOREGISTER_WAR_FILE and $TMP_BIOREGISTER_GROOVY both exist. "
   else
       echo "[ERROR] Bioregister installation zip file exist, but $TMP_BIOREGISTER_GROOVY doesn't exist"
-      /opt/aws/bin/cfn-signal -e 1 --reason  "Not found bioregister.groovy"  --stack $AWS_STACK_NAME --resource rAutoScalingGroupApp --region $AWS_REGION
-
+      exit 1
   fi
 fi
 
