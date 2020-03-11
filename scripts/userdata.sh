@@ -18,7 +18,7 @@ aws s3 ls s3://$P_INSTALL_BUCKET_NAME/
 aws s3 ls s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/
 
 
-yum install -y -q  unzip rsync
+yum install -y -q  unzip
 yum install -y -q  amazon-linux-extras install docker
 usermod -a -G docker ec2-user
 systemctl enable docker
@@ -64,6 +64,8 @@ export EFS_BROWSER_PROPERTIES=$EFS_BROWSER_DIR/browser.properties
 export EFS_BROWSER_LICENSE=$EFS_BROWSER_DIR/dotmatics.license.txt
 export EFS_BIOREGISTER_DIR=/efs/data/bioregister
 export EFS_BIOREGISTER_GROOVY=/efs/data/bioregister.groovy
+export EFS_CUSTOMED_BROWSER_DIR=$TMP_CONFIG_DIR/browser
+
 
 # Persistent Files
 export EFS_BROWSER_PDF_DIR=/efs/data/browser/pdf
@@ -71,6 +73,7 @@ export EFS_BROWSER_RAW_DIR="/efs/data/browser/raw data"
 export EFS_BROWSER_TEMP_DIR=/efs/data/browser/tempfiles
 export EFS_BROWSER_PROFILES_DIR=/efs/data/browser/profiles
 export EFS_BIOREGISTER_C2C_DIR=/efs/data/bioregister/c2c_attachments
+
 
 
 # Logs
@@ -90,6 +93,7 @@ mkdir -p $EFS_BIOREGISTER_C2C_DIR
 mkdir -p $EFS_BACKUP_DIR
 mkdir -p $EFS_BROWSER_LOG_DIR
 mkdir -p $EFS_BIOREGISTER_LOG_DIR
+mkdir -p $EFS_CUSTOMED_BROWSER_DIR
 
 
 
@@ -99,12 +103,13 @@ aws s3 cp s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/dotmatics.license
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/ --exclude "*.*" --include "browser-install-*.zip" --quiet
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/  --exclude "*.*" --include "bioregister-*.war" --quiet
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/  --exclude "*.*" --include "bioregister.groovy" --quiet
+aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/browser/   $EFS_CUSTOMED_BROWSER_DIR/
 aws s3 cp s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}infra/efs/data/WARN.txt $EFS_WARN_FILE  --quiet
 
 ls -ls $TMP_CONFIG_DIR
 
 export TMP_BROWSER_ZIP_FILE=$(ls $TMP_CONFIG_DIR/browser-*)
-export TMP_BIOREGISTER_WAR_FILE=$(ls $TMP_CONFIG_DIR/bioregister-*)\
+export TMP_BIOREGISTER_WAR_FILE=$(ls $TMP_CONFIG_DIR/bioregister-*)
 export TMP_BROWSER_ZIP_COUNT=$(ls $TMP_CONFIG_DIR/browser-* | wc -l | xargs )
 export TMP_BIOREGISTER_WAR_COUNT=$(ls $TMP_CONFIG_DIR/bioregister-* | wc -l | xargs )
 
