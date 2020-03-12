@@ -156,7 +156,9 @@ if [  ! -f "$TMP_BROWSER_PROPERTIES" ]; then
     echo '[WARN] Not found $TMP_BROWSER_PROPERTIES. Please check whether you upload browser.properties to s3.'
     echo "Start using browser.properties file from installation zip file."
     unzip -p $TMP_BROWSER_ZIP_FILE WEB-INF/browser.properties > $TMP_BROWSER_PROPERTIES
+    sed -i '/^db.dba.user/s/=.*$/='SYSTEM'/' $TMP_BROWSER_PROPERTIES
     ls -ls $TMP_CONFIG_DIR
+    cat $TMP_BROWSER_PROPERTIES | grep user
 fi
 
 
@@ -166,11 +168,20 @@ if [  -f "$TMP_BROWSER_PROPERTIES" ]; then
         echo "Merging new keys into current properties"
 
         docker run --rm -t -uroot \
-          -v /project/browser/MergeProps.groovy:/tmp/MergeProps.groovy \
+          -v /project/browser/groovy/MergeProps.groovy:/tmp/MergeProps.groovy \
           -v $EFS_BROWSER_PROPERTIES:/tmp/efs/browser.properties:z \
           -v $TMP_BROWSER_PROPERTIES:/tmp/tmp/browser.properties:z   \
           groovy:jre8 groovy /tmp/MergeProps.groovy
     fi
+
+
+
+    ### If db.dba.user is empty, then assign new user to it
+    docker run --rm -t -uroot \
+      -v /project/browser/groovy/CheckProps.groovy:/tmp/CheckProps.groovy \
+      -v $TMP_BROWSER_PROPERTIES:/tmp/browser.properties:z   \
+      groovy:jre8 groovy /tmp/CheckProps.groovy
+
 
     echo "Setup updates.setting=new in $TMP_BROWSER_PROPERTIES"
     sed -i '/^updates.setting/s/=.*$/=new/' $TMP_BROWSER_PROPERTIES
