@@ -5,7 +5,7 @@ RUN  yum update -y && \
 ENV CATALINA_HOME /usr/local/tomcat
 
 ### URL of Packages
-ENV LIBREOFFICE_URL         http://mirrors.coreix.net/thedocumentfoundation/libreoffice/stable/6.2.8/rpm/x86_64/LibreOffice_6.2.8_Linux_x86-64_rpm.tar.gz
+ENV LIBREOFFICE_URL         https://downloadarchive.documentfoundation.org/libreoffice/old/6.2.8.2/rpm/x86_64/LibreOffice_6.2.8.2_Linux_x86-64_rpm.tar.gz
 ENV CORRETTO_OPENJDK_URL    https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.rpm
 ENV TOMCAT_URL              https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.50/bin/apache-tomcat-8.5.50.tar.gz
 ENV FONT_CONFIG_URL         https://rpmfind.net/linux/centos/7.7.1908/os/x86_64/Packages/fontconfig-2.13.0-4.3.el7.x86_64.rpm
