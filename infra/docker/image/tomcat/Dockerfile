@@ -1,6 +1,6 @@
 FROM centos:7.6.1810
 RUN  yum update -y && \
-     yum install unzip glibc.i686 rsync -y
+     yum install unzip glibc.i686 rsync cairo cups -y
 
 ENV CATALINA_HOME /usr/local/tomcat
 
