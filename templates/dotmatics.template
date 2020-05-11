@@ -672,6 +672,7 @@ Resources:
             P_DATABASE_NAME=${pDatabaseName} \
             P_DNS_ZONE_ID=${pDnsHostedZoneID} \
             P_DNS_NAME=${pDNSName} \
+            P_CREATE_TLS_CERT=${pCreateTLSCert} \
             P_DNS_ZONE_APEX_DOMAIN=${pDnsHostedZoneApexDomain} \
             ALB_DNS_NAME=${rApplicationLoadBalancer.DNSName} \
             DATABASE_PORT=${databasePort} \
