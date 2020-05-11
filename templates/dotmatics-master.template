@@ -240,11 +240,11 @@ Parameters:
     MaxLength: 30
   pDataGuardConfig:
     AllowedValues:
-    - Single
     - Data Guard
+    - Single
     ConstraintDescription: Single - One instance only,  Data Guard - Two instances
       (Primary + Standby)
-    Default: Data Guard
+    Default: Single
     Description: 'Configuration: Single - One instance only,  Data Guard - Two instances
       (Primary + Standby)'
     Type: String
