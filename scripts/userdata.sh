@@ -5,7 +5,7 @@ set -e
 env
 
 yum update -y -q
-yum install  -q  -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+yum install  -q  -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm || true
 systemctl enable amazon-ssm-agent || true
 systemctl start amazon-ssm-agent || true
 systemctl status amazon-ssm-agent || true
