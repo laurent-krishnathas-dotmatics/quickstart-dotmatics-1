@@ -293,13 +293,6 @@ Parameters:
     Default: r4.2xlarge
     Description: Choose your Oracle Database instance type.
     Type: String
-  pCreateTLSCert:
-    AllowedValues:
-    - 'true'
-    - 'false'
-    Default: 'false'
-    Description: Do you want to create and associate a TLS certificate with the Application Load Balancer? This template performs domain validation as documented here - https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html. You will need to setup a certificate after the deployment if you set this to false.
-    Type: String
   pStandbyIPAddress:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
     ConstraintDescription: IP address parameter must be in the form x.x.x.x. Only required if you are using Oracle DataGuard.
@@ -423,7 +416,6 @@ Resources:
         pDmzSubnetB: !GetAtt rVPCStack.Outputs.PublicSubnet2ID
         pDnsHostedZoneApexDomain: !Ref pDnsHostedZoneApexDomain
         pDnsHostedZoneID: !Ref pDnsHostedZoneID
-        pCreateTLSCert: !Ref pCreateTLSCert
         pEC2KeyPair: !Ref pEC2KeyPair
         pLoadBalancerType: !Ref pLoadBalancerType
         pSecurityGroupForWebAccess: !Ref pSecurityGroupForWebAccess
