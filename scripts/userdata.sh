@@ -41,10 +41,10 @@ chown root:root /etc/systemd/system/browser.service
 #/usr/local/bin/goss -g  /project/browser/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
 #echo "GOSS validate Success"
 
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py
-pip install -q https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-/opt/aws/bin/cfn-init -v --stack $AWS_STACK_NAME --resource rAutoScalingConfigApp --configsets MountConfig --region $AWS_REGION
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  || true
+python get-pip.py  || true
+pip install -q https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz  || true
+/opt/aws/bin/cfn-init -v --stack $AWS_STACK_NAME --resource rAutoScalingConfigApp --configsets MountConfig --region $AWS_REGION  || true
 crontab /home/ec2-user/crontab
 
 
@@ -273,7 +273,7 @@ echo "chown done at $(date)"
 
 cat $EFS_BROWSER_PROPERTIES  | grep updates.setting >> $TMP_STATUS
 
-docker swarm init
+docker swarm init || true
 systemctl stop browser.service
 systemctl start browser.service
 sleep 5
