@@ -5,7 +5,7 @@ set -e
 env
 
 yum update -y -q
-yum install  -q  -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+yum install  -q  -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm || true
 systemctl enable amazon-ssm-agent || true
 systemctl start amazon-ssm-agent || true
 systemctl status amazon-ssm-agent || true
@@ -41,10 +41,10 @@ chown root:root /etc/systemd/system/browser.service
 #/usr/local/bin/goss -g  /project/browser/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
 #echo "GOSS validate Success"
 
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py
-pip install -q https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-/opt/aws/bin/cfn-init -v --stack $AWS_STACK_NAME --resource rAutoScalingConfigApp --configsets MountConfig --region $AWS_REGION
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  || true
+python get-pip.py  || true
+pip install -q https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz  || true
+/opt/aws/bin/cfn-init -v --stack $AWS_STACK_NAME --resource rAutoScalingConfigApp --configsets MountConfig --region $AWS_REGION  || true
 crontab /home/ec2-user/crontab
 
 
@@ -194,8 +194,13 @@ if [  -f "$TMP_BROWSER_PROPERTIES" ]; then
     if [ "$P_DNS_ZONE_ID" = '' ]; then
         echo "pDnsHostedZoneID is empty."
         sed -i '/^app.browserurl/s/=.*$/=http:\/\/'$ALB_DNS_NAME'/' $TMP_BROWSER_PROPERTIES
+
+    elif [ "$P_DNS_ZONE_APEX_DOMAIN" = '' ]; then
+        echo "pDnsZoneApexDomain is empty."
+        sed -i '/^app.browserurl/s/=.*$/=http:\/\/'$ALB_DNS_NAME'/' $TMP_BROWSER_PROPERTIES
+
     else
-        echo "pDnsHostedZoneID is not empty."
+        echo "pDnsHostedZoneID and pDnsZoneApexDomain are not empty."
         sed -i '/^app.browserurl/s/=.*$/=https:\/\/'$P_DNS_NAME'.'$P_DNS_ZONE_APEX_DOMAIN'/' $TMP_BROWSER_PROPERTIES
     fi
 fi
@@ -213,8 +218,12 @@ if [  -f "$TMP_BIOREGISTER_GROOVY" ]; then
     if [ '$P_DNS_ZONE_ID' = '' ] ; then
           echo "pDnsHostedZoneID is empty."
           sed -i 's/http:\/\/localhost:8080/http:\/\/'$ALB_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
+
+    elif [ "$P_DNS_ZONE_APEX_DOMAIN" = '' ]; then
+          echo "pDnsZoneApexDomain is empty."
+          sed -i 's/http:\/\/localhost:8080/http:\/\/'$ALB_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
     else
-          echo "pDnsHostedZoneID is not empty."
+          echo "pDnsHostedZoneID and pDnsZoneApexDomain are not empty."
           sed -i 's/http:\/\/localhost:8080/https:\/\/'$P_DNS_NAME'.'$P_DNS_ZONE_APEX_DOMAIN'/g'  $TMP_BIOREGISTER_GROOVY
     fi
     sed -i 's/localhost/'$PRIVATE_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
@@ -264,7 +273,7 @@ echo "chown done at $(date)"
 
 cat $EFS_BROWSER_PROPERTIES  | grep updates.setting >> $TMP_STATUS
 
-docker swarm init
+docker swarm init || true
 systemctl stop browser.service
 systemctl start browser.service
 sleep 5
