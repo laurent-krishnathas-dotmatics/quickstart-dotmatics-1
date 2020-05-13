@@ -101,19 +101,15 @@ aws s3 cp s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/browser.propertie
 aws s3 cp s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/dotmatics.license.txt  $TMP_LICENSE || true
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/ --exclude "*.*" --include "browser-install-*.zip" --quiet
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/  --exclude "*.*" --include "bioregister-*.war" --quiet
-aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/  --exclude "*.*" --include "bioregister.groovy" --quiet
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/browser/   $EFS_CUSTOMED_BROWSER_DIR/
 aws s3 cp s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}infra/efs/data/WARN.txt $EFS_WARN_FILE  --quiet
 
 ls -ls $TMP_CONFIG_DIR
 
 export TMP_BROWSER_ZIP_FILE=$(ls $TMP_CONFIG_DIR/browser-*)
-export TMP_BIOREGISTER_WAR_FILE=$(ls $TMP_CONFIG_DIR/bioregister-*)
 export TMP_BROWSER_ZIP_COUNT=$(ls $TMP_CONFIG_DIR/browser-* | wc -l | xargs )
-export TMP_BIOREGISTER_WAR_COUNT=$(ls $TMP_CONFIG_DIR/bioregister-* | wc -l | xargs )
 
 echo "TMP_BROWSER_ZIP_FILE=$TMP_BROWSER_ZIP_FILE"
-echo "TMP_BIOREGISTER_WAR_FILE=$TMP_BIOREGISTER_WAR_FILE"
 
 
 if [ -z "$TMP_BROWSER_ZIP_FILE" ]
@@ -131,25 +127,6 @@ elif [ ! -f  "$TMP_LICENSE" ]; then
   echo '[ERROR] $TMP_LICENSE not found '
   exit 1
 fi
-
-
-if [ -z "$TMP_BIOREGISTER_WAR_FILE" ]; then
-    echo "[WARN] There is no bioregister installation zip file."
-
-elif [ "$TMP_BIOREGISTER_WAR_COUNT" -gt 1 ] ; then
-    echo "[ERROR] Too many bioregister installation zip files."
-    exit 1
-
-else
-  if [  -f "$TMP_BIOREGISTER_GROOVY" ]; then
-      echo "$TMP_BIOREGISTER_WAR_FILE and $TMP_BIOREGISTER_GROOVY both exist. "
-  else
-      echo "[ERROR] Bioregister installation zip file exists, but $TMP_BIOREGISTER_GROOVY doesn't exist"
-      exit 1
-  fi
-fi
-
-
 
 if [  ! -f "$TMP_BROWSER_PROPERTIES" ]; then
     echo '[WARN] Not found $TMP_BROWSER_PROPERTIES. Please check whether you upload browser.properties to s3.'
@@ -241,6 +218,9 @@ docker version
 docker service ls
 
 echo "export EFS_BROWSER_PROPERTIES=$EFS_BROWSER_PROPERTIES" >> /etc/environment
+echo "export TMP_BIOREGISTER_GROOVY=$TMP_BIOREGISTER_GROOVY" >> /etc/environment
+echo "export EFS_BIOREGISTER_GROOVY=$EFS_BIOREGISTER_GROOVY" >> /etc/environment
+echo "export TMP_CONFIG_DIR=$TMP_CONFIG_DIR" >> /etc/environment
 source /etc/environment
 
 echo "Installation finished"
