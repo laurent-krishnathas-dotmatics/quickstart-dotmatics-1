@@ -21,9 +21,13 @@ systemctl start docker
 docker version
 
 
-mkdir -p /project/browser
+mkdir -p /project/browser/
+mkdir -p /project/scripts/
 chmod -R 755 /project/browser
 aws s3 cp s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}infra/ /project/browser/ --recursive --quiet
+aws s3 sync s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}scripts/ /project/scripts/ --exclude "*.*" --include "*.sh"
+
+chmod +x /project/scripts/*.sh
 chown -R ec2-user:ec2-user /project
 ls -lsa  /project/browser/
 
@@ -140,7 +144,7 @@ else
   if [  -f "$TMP_BIOREGISTER_GROOVY" ]; then
       echo "$TMP_BIOREGISTER_WAR_FILE and $TMP_BIOREGISTER_GROOVY both exist. "
   else
-      echo "[ERROR] Bioregister installation zip file exist, but $TMP_BIOREGISTER_GROOVY doesn't exist"
+      echo "[ERROR] Bioregister installation zip file exists, but $TMP_BIOREGISTER_GROOVY doesn't exist"
       exit 1
   fi
 fi
@@ -168,8 +172,6 @@ if [  -f "$TMP_BROWSER_PROPERTIES" ]; then
           -v $TMP_BROWSER_PROPERTIES:/tmp/tmp/browser.properties:z   \
           groovy:jre8 groovy /tmp/MergeProps.groovy
     fi
-
-
 
     ### If db.dba.user is empty, then assign new user to it
     docker run --rm -t -uroot \
@@ -200,36 +202,7 @@ if [  -f "$TMP_BROWSER_PROPERTIES" ]; then
     fi
 fi
 
-
-if [  -f "$TMP_BIOREGISTER_GROOVY" ]; then
-    echo "bioregister.groovy exists,then update ServerURL and oracle host."
-
-    if [   -f  "$EFS_BIOREGISTER_GROOVY" ]; then
-        export BIOREGISTER_PASSWORD=$(cat $EFS_BIOREGISTER_GROOVY | grep password= |  cut -d"'" -f2 | xargs)
-        sed -i 's/password=\x27.*\x27/password=\x27'$BIOREGISTER_PASSWORD'\x27/g' $TMP_BIOREGISTER_GROOVY
-        cat $TMP_BIOREGISTER_GROOVY | grep password=
-    fi
-
-    if [ '$P_DNS_ZONE_ID' = '' ] ; then
-          echo "pDnsHostedZoneID is empty."
-          sed -i 's/http:\/\/localhost:8080/http:\/\/'$ALB_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
-
-    elif [ "$P_DNS_ZONE_APEX_DOMAIN" = '' ]; then
-          echo "pDnsZoneApexDomain is empty."
-          sed -i 's/http:\/\/localhost:8080/http:\/\/'$ALB_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
-    else
-          echo "pDnsHostedZoneID and pDnsZoneApexDomain are not empty."
-          sed -i 's/http:\/\/localhost:8080/https:\/\/'$P_DNS_NAME'.'$P_DNS_ZONE_APEX_DOMAIN'/g'  $TMP_BIOREGISTER_GROOVY
-    fi
-    sed -i 's/localhost/'$PRIVATE_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
-    sed -i 's/c:\\\\c2c_attachments/\/c2c_attachments/g' $TMP_BIOREGISTER_GROOVY
-    sed -i 's/XE/'$P_DATABASE_NAME'/g' $TMP_BIOREGISTER_GROOVY
-    echo "updating browser.properties done at $(date)"
-else
-    echo "[WARN] $TMP_BIOREGISTER_GROOVY doesn't exist,then bioregister container will not be launched."
-fi
-
-echo "updating browser.properties done at $(date)"
+echo "updated tmp browser.properties at $(date)"
 
 #Backup webapps before installation/upgrade
 export BACKUP_DATE=$(date +'%Y-%m%d-%Hh%M')
@@ -238,22 +211,13 @@ mkdir -p /efs/backup/$BACKUP_DATE/
 if [  -f "$EFS_BROWSER_PROPERTIES" ]; then
     cp -r $EFS_BROWSER_PROPERTIES /efs/backup/$BACKUP_DATE/
     cp -r $EFS_BROWSER_LICENSE /efs/backup/$BACKUP_DATE/
+    echo "backup browser.properties done at $(date)"
 fi
 
-if [  -f "$EFS_BIOREGISTER_GROOVY" ]; then
-    cp -r $EFS_BIOREGISTER_GROOVY /efs/backup/$BACKUP_DATE/
-fi
-echo "backup done at $(date)"
+/project/scripts/update-bioregister-groovy.sh  BACKUP_DATE=$BACKUP_DATE
 
 
-echo "copy config file to efs"
-
-if [  -f "$TMP_BIOREGISTER_GROOVY" ]; then
-  echo "copy bioregister ... "
-  yes | cp $TMP_BIOREGISTER_GROOVY $EFS_BIOREGISTER_GROOVY
-  rm -rf $TMP_BIOREGISTER_GROOVY
-fi
-
+echo "copy browser properties to efs"
 yes | cp $TMP_BROWSER_PROPERTIES $EFS_BROWSER_PROPERTIES
 yes | cp $TMP_LICENSE $EFS_BROWSER_LICENSE
 
@@ -275,6 +239,9 @@ sleep 5
 systemctl status browser.service
 docker version
 docker service ls
+
+echo "export EFS_BROWSER_PROPERTIES=$EFS_BROWSER_PROPERTIES" >> /etc/environment
+source /etc/environment
 
 echo "Installation finished"
 echo "userdata done." >> $TMP_STATUS

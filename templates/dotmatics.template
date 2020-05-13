@@ -663,20 +663,22 @@ Resources:
             aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/userdata.sh $USERDATA_FILE
             chmod +x $USERDATA_FILE
 
-            QS_BUCKET_NAME=${QSS3BucketName} \
-            QS_KEY_PREFIX=${QSS3KeyPrefix} \
-            P_INSTALL_BUCKET_NAME=${pInstallBucketName} \
-            P_INSTALL_BUCKET_PREFIX=${pInstallBucketPrefix} \
-            PRIVATE_DNS_NAME=${rOracleStack.Outputs.PrivateDNSName} \
-            P_DATABASE_PASS=${pDatabasePass} \
-            P_DATABASE_NAME=${pDatabaseName} \
-            P_DNS_ZONE_ID=${pDnsHostedZoneID} \
-            P_DNS_NAME=${pDNSName} \
-            P_DNS_ZONE_APEX_DOMAIN=${pDnsHostedZoneApexDomain} \
-            ALB_DNS_NAME=${rApplicationLoadBalancer.DNSName} \
-            DATABASE_PORT=${databasePort} \
-            AWS_STACK_NAME=${AWS::StackName} \
-            AWS_REGION=${AWS::Region} \
+            echo "export QS_BUCKET_NAME=${QSS3BucketName}" >> /etc/environment
+            echo "export QS_KEY_PREFIX=${QSS3KeyPrefix}" >> /etc/environment
+            echo "export P_INSTALL_BUCKET_NAME=${pInstallBucketName}" >> /etc/environment
+            echo "export P_INSTALL_BUCKET_PREFIX=${pInstallBucketPrefix}" >> /etc/environment
+            echo "export PRIVATE_DNS_NAME=${rOracleStack.Outputs.PrivateDNSName}" >> /etc/environment
+            echo "export P_DATABASE_PASS=${pDatabasePass}" >> /etc/environment
+            echo "export P_DATABASE_NAME=${pDatabaseName}" >> /etc/environment
+            echo "export P_DNS_ZONE_ID=${pDnsHostedZoneID}" >> /etc/environment
+            echo "export P_DNS_NAME=${pDNSName}" >> /etc/environment
+            echo "export P_DNS_ZONE_APEX_DOMAIN=${pDnsHostedZoneApexDomain}" >> /etc/environment
+            echo "export ALB_DNS_NAME=${rApplicationLoadBalancer.DNSName}" >> /etc/environment
+            echo "export DATABASE_PORT=${databasePort}" >> /etc/environment
+            echo "export AWS_STACK_NAME=${AWS::StackName}" >> /etc/environment
+            echo "export AWS_REGION=${AWS::Region}" >> /etc/environment
+            source /etc/environment
+
             $USERDATA_FILE
 
 
