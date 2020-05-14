@@ -48,7 +48,7 @@ crontab /home/ec2-user/crontab
 
 
 
-export TMP_CONFIG_DIR=/efs/config/tmp
+export TMP_CONFIG_DIR=/efs/tmp/install
 export TMP_STATUS=$TMP_CONFIG_DIR/status
 
 rm -rf $TMP_CONFIG_DIR

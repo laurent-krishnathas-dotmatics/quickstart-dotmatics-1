@@ -10,8 +10,8 @@ if [ -d "/config" ]; then
     ls -la /config
 fi
 mkdir -p $CATALINA_HOME/webapps/browser
-BROWSER_ZIP_FILE=$(ls /config/browser-*.zip )
-BROWSER_ZIP_COUNT=$(ls /config/browser-*.zip | wc -l | xargs )
+BROWSER_ZIP_FILE=$(ls /install/browser-*.zip )
+BROWSER_ZIP_COUNT=$(ls /install/browser-*.zip | wc -l | xargs )
 
 if [ "$BROWSER_ZIP_COUNT" -gt 1 ]; then
     echo "[ERROR] Too many browser installation zip files."

@@ -22,8 +22,8 @@ else
     date
 fi
 
-BIOREGISTER_WAR_FILE=$(ls /config/bioregister*.war)
-BIOREGISTER_WAR_COUNT=$(ls /config/bioregister*.war | wc -l | xargs )
+BIOREGISTER_WAR_FILE=$(ls /install/bioregister*.war)
+BIOREGISTER_WAR_COUNT=$(ls /install/bioregister*.war | wc -l | xargs )
 
 if [ "$BIOREGISTER_WAR_COUNT" -gt 1 ]; then
     echo "[ERROR] Too many bioregister installation war files."
