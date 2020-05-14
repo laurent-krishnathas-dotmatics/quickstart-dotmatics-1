@@ -166,12 +166,6 @@ if [  -f "$TMP_BROWSER_PROPERTIES" ]; then
     sed -i '/^db.sid/s/=.*$/='$P_DATABASE_NAME'/' $TMP_BROWSER_PROPERTIES
 
 
-    if [ "$ENABLE_HTTPS_ON_APP" == "true" ]; then
-        export APP_SERVER_PROTOCOL=https
-    else
-        export APP_SERVER_PROTOCOL=http
-    fi
-
     if [ "$P_DNS_ZONE_ID" = '' ] || [ "$P_DNS_ZONE_APEX_DOMAIN" = '' ] ; then
         echo "pDnsHostedZoneID or pDnsZoneApexDomain is empty."
         export APP_SERVER_URL=$APP_SERVER_PROTOCOL:\/\/$ALB_DNS_NAME

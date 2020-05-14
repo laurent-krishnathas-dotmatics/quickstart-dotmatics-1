@@ -19,7 +19,7 @@ Metadata:
       - pPrivateSubnet2CIDR
       - pDnsHostedZoneID
       - pDnsHostedZoneApexDomain
-      - pEnableHttpsOnApplicationServer
+      - pApplicationServerProtocol
       - pLoadBalancerType
       - pSecurityGroupForWebAccess
       - pWebAccessCIDR
@@ -75,8 +75,8 @@ Metadata:
         default: Internal DNS hosted zone ID
       pDNSName: 
         default: Dotmatics Server DNS Name
-      pEnableHttpsOnApplicationServer:
-        default: Use Https on application server ?
+      pApplicationServerProtocol:
+        default: Use Https or Http on application server
       pEC2KeyPair:
         default: Key Pair for Servers
       pLoadBalancerType:
@@ -155,11 +155,11 @@ Parameters:
     Description: (Optional) The internal DNS CNAME to be used for the Dotmatics server. Leave the default if you are unsure of what this does.
     Type: String
     Default: dotmatics
-  pEnableHttpsOnApplicationServer:
+  pApplicationServerProtocol:
     AllowedValues:
-    - 'true'
-    - 'false'
-    Default: 'false'
+    - 'http'
+    - 'https'
+    Default: 'http'
     Description: Once HTTPS is enabled, you need to manually associate a TLS certificate with the Application Load Balancer
     Type: String
   pEC2KeyPair:
@@ -431,7 +431,7 @@ Resources:
         pSecurityGroupForWebAccess: !Ref pSecurityGroupForWebAccess
         pVpcId: !GetAtt rVPCStack.Outputs.VPCID
         pWebAccessCIDR: !Ref pWebAccessCIDR
-        pEnableHttpsOnApplicationServer: !Ref pEnableHttpsOnApplicationServer
+        pApplicationServerProtocol: !Ref pApplicationServerProtocol
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
 
