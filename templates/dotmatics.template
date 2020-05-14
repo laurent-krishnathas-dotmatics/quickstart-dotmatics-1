@@ -21,6 +21,7 @@ Metadata:
       - pDnsHostedZoneID
       - pDnsHostedZoneApexDomain
       - pCreateTLSCert
+      - pEnableHttpsOnApplicationServer
       - pLoadBalancerType
       - pSecurityGroupForWebAccess
       - pWebAccessCIDR
@@ -57,6 +58,8 @@ Metadata:
     ParameterLabels:
       pCreateTLSCert:
         default: Create a TLS Certificate for the Load Balancer?
+      pEnableHttpsOnApplicationServer:
+        default: Use Https on application server ?
       pStandbyIPAddress:
         default: Standby Database Private IP (Only required if using Oracle Data Guard)
       pPrimaryIPAddress:
@@ -127,6 +130,13 @@ Parameters:
     - 'false'
     Default: 'false'
     Description: Do you want to create and associate a TLS certificate with the Application Load Balancer? This template performs domain validation as documented here - https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html. You will need to setup a certificate after the deployment if you set this to false.
+    Type: String
+  pEnableHttpsOnApplicationServer:
+    AllowedValues:
+    - 'true'
+    - 'false'
+    Default: 'false'
+    Description: Once HTTPS is enabled, you need to manually associate a TLS certificate with the Application Load Balancer
     Type: String
   pStandbyIPAddress:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
@@ -354,6 +364,7 @@ Conditions:
   cWebAccessSG: !Not [ !Equals [ !Ref pSecurityGroupForWebAccess, "" ] ]
   cNoWebAccessSG: !Equals [ !Ref pSecurityGroupForWebAccess, "" ]
   cCreateTLSCert: !Equals [ !Ref pCreateTLSCert, "true" ]
+  pEnableHttpsOnApplicationServer: !Equals [ !Ref pEnableHttpsOnApplicationServer, "true" ]
   cSkipTLSCert: !Equals [ !Ref pCreateTLSCert, "false" ]
 Resources:
   # If a hosted zone is specified, create a DNS Record
@@ -677,6 +688,8 @@ Resources:
             echo "export DATABASE_PORT=${databasePort}" >> /etc/environment
             echo "export AWS_STACK_NAME=${AWS::StackName}" >> /etc/environment
             echo "export AWS_REGION=${AWS::Region}" >> /etc/environment
+            echo "export ENABLE_HTTPS_ON_APP=${pEnableHttpsOnApplicationServer}" >> /etc/environment
+
             source /etc/environment
 
             $USERDATA_FILE
@@ -898,7 +911,7 @@ Outputs:
     Description: URL to Load Balancer to access Dotmaics application.
     Value: !Sub http://${pDNSName}.${pDnsHostedZoneApexDomain}/browser
   oDNSUrlTLS:
-    Condition: cCreateTLSCert
+    Condition: pEnableHttpsOnApplicationServer
     Description: URL to Load Balancer to access Dotmaics application over TLS.
     Value: !Sub https://${pDNSName}.${pDnsHostedZoneApexDomain}/browser
   oWebAccessCidrSG:

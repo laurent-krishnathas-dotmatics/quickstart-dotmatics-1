@@ -28,16 +28,7 @@ else
             cat $TMP_BIOREGISTER_GROOVY | grep password=
         fi
 
-        if [ '$P_DNS_ZONE_ID' = '' ] ; then
-            echo "pDnsHostedZoneID is empty."
-            sed -i 's/http:\/\/localhost:8080/http:\/\/'$ALB_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
-        elif [ "$P_DNS_ZONE_APEX_DOMAIN" = '' ]; then
-            echo "pDnsZoneApexDomain is empty."
-            sed -i 's/http:\/\/localhost:8080/http:\/\/'$ALB_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
-        else
-            echo "pDnsHostedZoneID and pDnsZoneApexDomain are not empty."
-            sed -i 's/http:\/\/localhost:8080/https:\/\/'$P_DNS_NAME'.'$P_DNS_ZONE_APEX_DOMAIN'/g'  $TMP_BIOREGISTER_GROOVY
-        fi
+        sed -i 's/http:\/\/localhost:8080/'$APP_SERVER_URL'/g'  $TMP_BIOREGISTER_GROOVY
         sed -i 's/localhost/'$PRIVATE_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
         sed -i 's/c:\\\\c2c_attachments/\/c2c_attachments/g' $TMP_BIOREGISTER_GROOVY
         sed -i 's/XE/'$P_DATABASE_NAME'/g' $TMP_BIOREGISTER_GROOVY

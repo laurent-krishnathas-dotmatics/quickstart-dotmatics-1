@@ -43,7 +43,7 @@ chown root:root /etc/systemd/system/browser.service
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
 pip install -q https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-/opt/aws/bin/cfn-init -v --stack $AWS_STACK_NAME --resource rAutoScalingConfigApp --configsets MountConfig --region $AWS_REGION
+/opt/aws/bin/cfn-init -v --stack $AWS_STACK_NAME --resource rAutoScalingConfigApp --configsets MountConfig --region $AWS_REGION || true
 crontab /home/ec2-user/crontab
 
 
@@ -165,18 +165,23 @@ if [  -f "$TMP_BROWSER_PROPERTIES" ]; then
     sed -i '/^db.dba.password/s/=.*$/='$P_DATABASE_PASS'/' $TMP_BROWSER_PROPERTIES
     sed -i '/^db.sid/s/=.*$/='$P_DATABASE_NAME'/' $TMP_BROWSER_PROPERTIES
 
-    if [ "$P_DNS_ZONE_ID" = '' ]; then
-        echo "pDnsHostedZoneID is empty."
-        sed -i '/^app.browserurl/s/=.*$/=http:\/\/'$ALB_DNS_NAME'/' $TMP_BROWSER_PROPERTIES
 
-    elif [ "$P_DNS_ZONE_APEX_DOMAIN" = '' ]; then
-        echo "pDnsZoneApexDomain is empty."
-        sed -i '/^app.browserurl/s/=.*$/=http:\/\/'$ALB_DNS_NAME'/' $TMP_BROWSER_PROPERTIES
+    if [ "$ENABLE_HTTPS_ON_APP" == "true" ]; then
+        export APP_SERVER_PROTOCOL=https
+    else
+        export APP_SERVER_PROTOCOL=http
+    fi
 
+    if [ "$P_DNS_ZONE_ID" = '' ] || [ "$P_DNS_ZONE_APEX_DOMAIN" = '' ] ; then
+        echo "pDnsHostedZoneID or pDnsZoneApexDomain is empty."
+        export APP_SERVER_URL=$APP_SERVER_PROTOCOL:\/\/$ALB_DNS_NAME
     else
         echo "pDnsHostedZoneID and pDnsZoneApexDomain are not empty."
-        sed -i '/^app.browserurl/s/=.*$/=https:\/\/'$P_DNS_NAME'.'$P_DNS_ZONE_APEX_DOMAIN'/' $TMP_BROWSER_PROPERTIES
+        export APP_SERVER_URL=$APP_SERVER_PROTOCOL:\\/\\/$P_DNS_NAME.$P_DNS_ZONE_APEX_DOMAIN
     fi
+
+    sed -i '/^app.browserurl/s/=.*$/='$APP_SERVER_URL'/' $TMP_BROWSER_PROPERTIES
+
 fi
 
 echo "updated tmp browser.properties at $(date)"
@@ -221,8 +226,10 @@ echo "export EFS_BROWSER_PROPERTIES=$EFS_BROWSER_PROPERTIES" >> /etc/environment
 echo "export TMP_BIOREGISTER_GROOVY=$TMP_BIOREGISTER_GROOVY" >> /etc/environment
 echo "export EFS_BIOREGISTER_GROOVY=$EFS_BIOREGISTER_GROOVY" >> /etc/environment
 echo "export TMP_CONFIG_DIR=$TMP_CONFIG_DIR" >> /etc/environment
+echo "export APP_SERVER_URL=$APP_SERVER_URL" >> /etc/environment
+
 source /etc/environment
 
 echo "Installation finished"
 echo "userdata done." >> $TMP_STATUS
-/opt/aws/bin/cfn-signal -e $? --stack $AWS_STACK_NAME --resource rAutoScalingGroupApp --region $AWS_REGION
+/opt/aws/bin/cfn-signal -e $? --stack $AWS_STACK_NAME --resource rAutoScalingGroupApp --region $AWS_REGION || true
