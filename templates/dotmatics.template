@@ -671,7 +671,7 @@ Resources:
             whoami
 
             export USERDATA_FILE=/tmp/userdata.sh
-            aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/userdata.sh $USERDATA_FILE
+            aws s3 cp s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/bash/userdata.sh $USERDATA_FILE
             chmod +x $USERDATA_FILE
 
             echo "export QS_BUCKET_NAME=${QSS3BucketName}" >> /etc/environment

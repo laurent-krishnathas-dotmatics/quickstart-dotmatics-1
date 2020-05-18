@@ -21,23 +21,27 @@ systemctl start docker
 docker version
 
 
-mkdir -p /project/browser/
-mkdir -p /project/scripts/
-chmod -R 755 /project/browser
-aws s3 cp s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}infra/ /project/browser/ --recursive --quiet
-aws s3 sync s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}scripts/ /project/scripts/ --exclude "*.*" --include "*.sh"
+mkdir -p /project/quickstart-dotmatics/infra/
+mkdir -p /project/quickstart-dotmatics/scripts/bash
+mkdir -p /project/quickstart-dotmatics/scripts/groovy
 
-chmod +x /project/scripts/*.sh
+chmod -R 755 /project/quickstart-dotmatics
+aws s3 cp s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}infra/ /project/quickstart-dotmatics/infra/ --recursive --quiet
+aws s3 sync s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}scripts/bash/ /project/quickstart-dotmatics/scripts/bash/ --exclude "*.*" --include "*.sh"
+aws s3 sync s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}scripts/groovy/ /project/quickstart-dotmatics/scripts/groovy/ --exclude "*.*" --include "*.groovy"
+
+chmod +x /project/quickstart-dotmatics/scripts/bash/*.sh
+chmod +x /project/quickstart-dotmatics/infra/makefile.sh
 chown -R ec2-user:ec2-user /project
-ls -lsa  /project/browser/
+ls -lsa  /project/quickstart-dotmatics/infra
 
-mv /project/browser/infrastructor/templates/browser.service.tmpl /etc/systemd/system/browser.service
+mv /project/quickstart-dotmatics/infra/infrastructor/templates/browser.service.tmpl /etc/systemd/system/browser.service
 chmod 644 /etc/systemd/system/browser.service
 chown root:root /etc/systemd/system/browser.service
 
 
 #curl -fsSL https://goss.rocks/install | sh
-#/usr/local/bin/goss -g  /project/browser/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
+#/usr/local/bin/goss -g  /project/quickstart-dotmatics/infra/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
 #echo "GOSS validate Success"
 
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -101,6 +105,7 @@ aws s3 cp s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/browser.propertie
 aws s3 cp s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/dotmatics.license.txt  $TMP_LICENSE || true
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/ --exclude "*.*" --include "browser-install-*.zip" --quiet
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/  --exclude "*.*" --include "bioregister-*.war" --quiet
+aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/   $TMP_CONFIG_DIR/  --exclude "*.*" --include "vortexweb-*.zip" --quiet
 aws s3 sync s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/browser/   $EFS_CUSTOMED_BROWSER_DIR/
 aws s3 cp s3://$QS_BUCKET_NAME/${QS_KEY_PREFIX}infra/efs/data/WARN.txt $EFS_WARN_FILE  --quiet
 
@@ -144,7 +149,7 @@ if [  -f "$TMP_BROWSER_PROPERTIES" ]; then
         echo "Merging new keys into current properties"
 
         docker run --rm -t -uroot \
-          -v /project/browser/groovy/MergeProps.groovy:/tmp/MergeProps.groovy \
+          -v /project/quickstart-dotmatics/scripts/groovy/MergeProps.groovy:/tmp/MergeProps.groovy \
           -v $EFS_BROWSER_PROPERTIES:/tmp/efs/browser.properties:z \
           -v $TMP_BROWSER_PROPERTIES:/tmp/tmp/browser.properties:z   \
           groovy:jre8 groovy /tmp/MergeProps.groovy
@@ -152,7 +157,7 @@ if [  -f "$TMP_BROWSER_PROPERTIES" ]; then
 
     ### If db.dba.user is empty, then assign new user to it
     docker run --rm -t -uroot \
-      -v /project/browser/groovy/CheckProps.groovy:/tmp/CheckProps.groovy \
+      -v /project/quickstart-dotmatics/scripts/groovy/CheckProps.groovy:/tmp/CheckProps.groovy \
       -v $TMP_BROWSER_PROPERTIES:/tmp/browser.properties:z   \
       groovy:jre8 groovy /tmp/CheckProps.groovy
 
@@ -190,7 +195,7 @@ if [  -f "$EFS_BROWSER_PROPERTIES" ]; then
     echo "backup browser.properties done at $(date)"
 fi
 
-/project/scripts/update-bioregister-groovy.sh  BACKUP_DATE=$BACKUP_DATE
+/project/quickstart-dotmatics/scripts/bash/update-bioregister-groovy.sh  BACKUP_DATE=$BACKUP_DATE
 
 
 echo "copy browser properties to efs"

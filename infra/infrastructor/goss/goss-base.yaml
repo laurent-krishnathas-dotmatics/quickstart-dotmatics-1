@@ -3,7 +3,7 @@ file:
   /root/.aws:
     exists: false
     filetype: directory
-  /project/browser:
+  /project/quickstart-dotmatics:
     exists: true
     filetype: directory
   /etc/systemd/system/browser.service:

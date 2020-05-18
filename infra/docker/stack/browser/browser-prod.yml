@@ -39,3 +39,13 @@ services:
       resources:
         limits:
           memory: ${BIOREGISTER_LIMIT_MEM}
+
+
+  vortex:
+    image: vortex:dotmatics-1.0
+    volumes:
+      - /efs/tmp/install:/install:z
+    deploy:
+      resources:
+        limits:
+          memory: ${VORTEX_LIMIT_MEM}

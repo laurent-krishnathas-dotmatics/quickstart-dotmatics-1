@@ -44,7 +44,7 @@ else
     exit 1
 fi
 
-SRC_FILE=$BROWSER_LICENSE_FILE
+SRC_FILE=$DOTMATICS_LICENSE_FILE
 FILE=dotmatics.license.txt
 if [ -f "$SRC_FILE" ]; then
     mv -f $CATALINA_HOME/webapps/browser/WEB-INF/$FILE $CATALINA_HOME/webapps/browser/WEB-INF/${FILE}_backup || true
