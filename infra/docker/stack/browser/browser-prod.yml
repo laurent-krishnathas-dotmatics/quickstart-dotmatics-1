@@ -45,6 +45,7 @@ services:
     image: vortex:dotmatics-1.0
     volumes:
       - /efs/tmp/install:/install:z
+      - /efs/data/browser/WEB-INF/dotmatics.license.txt:/config/dotmatics.license.txt:z
     deploy:
       resources:
         limits:

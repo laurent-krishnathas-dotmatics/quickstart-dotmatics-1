@@ -14,18 +14,14 @@ function stack_deploy_browser(){
 
 
     if [ "$BIOREGISTER_ENABLE" = "true" ] &&  [ "$VORTEX_ENABLE" = "true" ]  ; then
-        echo "b=t, v=t"
         BROWSER_LIMIT_MEM=$MEM_50_PCT  BIOREGISTER_LIMIT_MEM=$MEM_20_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
 
     elif [ "$BIOREGISTER_ENABLE" = "true" ] &&  [ "$VORTEX_ENABLE" = "false" ]  ; then
-        echo "b=t, v=f"
         BROWSER_LIMIT_MEM=$MEM_50_PCT  BIOREGISTER_LIMIT_MEM=$MEM_30_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
 
     elif [ "$BIOREGISTER_ENABLE" = "false" ] &&  [ "$VORTEX_ENABLE" = "true" ]  ; then
-        echo "b=f, v=t"
         BROWSER_LIMIT_MEM=$MEM_80_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_00_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
     else
-        echo "b=f,v=f"
         BROWSER_LIMIT_MEM=$MEM_70_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
         make ENV=$ENV scale_down_vortex
         make ENV=$ENV scale_down_bioregister
@@ -38,7 +34,7 @@ function set_up_configuration(){
 
     export BIOREGISTER_GROOVY=/efs/data/bioregister.groovy
     export BIOREGISTER_ZIP_COUNT=$(ls /efs/tmp/install/bioregister-* | wc -l | xargs )
-    export VORTEX_ZIP_COUNT=$(ls /efs/tmp/install/vortexweb-* | wc -l | xargs )
+    export VORTEX_ZIP_COUNT=$(ls /efs/tmp/install/vortexweb* | wc -l | xargs )
 
     export MEM_80_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*80/100"m"}' )
     export MEM_70_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*70/100"m"}' )
@@ -46,6 +42,7 @@ function set_up_configuration(){
     export MEM_50_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*50/100"m"}' )
     export MEM_40_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*40/100"m"}' )
     export MEM_30_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*30/100"m"}' )
+    export MEM_20_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*20/100"m"}' )
     export MEM_10_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*10/100"m"}' )
     export MEM_00_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*0/100"m"}' )
 

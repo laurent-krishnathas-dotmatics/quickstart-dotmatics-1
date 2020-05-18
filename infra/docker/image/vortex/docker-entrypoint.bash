@@ -8,8 +8,8 @@ if [ -d "/config" ]; then
     ls -la /config
 fi
 mkdir -p $CATALINA_HOME/webapps/vortexweb
-VORTEX_ZIP_FILE=$(ls /install/vortexweb-*.zip )
-VORTEX_ZIP_COUNT=$(ls /install/vortexweb-*.zip | wc -l | xargs )
+VORTEX_ZIP_FILE=$(ls /install/vortexweb*.zip )
+VORTEX_ZIP_COUNT=$(ls /install/vortexweb*.zip | wc -l | xargs )
 
 if [ "$VORTEX_ZIP_COUNT" -gt 1 ]; then
     echo "[ERROR] Too many vortex installation zip files."
