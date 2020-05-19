@@ -24,8 +24,17 @@ else
 
         if [   -f  "$EFS_BIOREGISTER_GROOVY" ]; then
             export BIOREGISTER_PASSWORD=$(cat $EFS_BIOREGISTER_GROOVY | grep password= |  cut -d"'" -f2 | xargs)
-            sed -i 's/password=\x27.*\x27/password=\x27'$BIOREGISTER_PASSWORD'\x27\n\tpasswordEncryptionCodec=BrowserEncryptionCodec/g' $TMP_BIOREGISTER_GROOVY
+            sed -i 's/password=\x27.*\x27/password=\x27'$BIOREGISTER_PASSWORD'\x27/g' $TMP_BIOREGISTER_GROOVY
             cat $TMP_BIOREGISTER_GROOVY | grep password=
+
+            export ENCRYPT_CODE=$(cat $TMP_BIOREGISTER_GROOVY | grep passwordEncryptionCodec=)
+            if [ -z "$ENCRYPT_CODE" ]; then
+                echo "ENCRYPT_CODE is empty."
+                sed -i '/password=\x27.*\x27/ a \\tpasswordEncryptionCodec=BrowserEncryptionCodec' $TMP_BIOREGISTER_GROOVY
+            fi
+
+        else
+            echo "bioregister.groovy not found in EFS, it is first time deploying bioregister."
         fi
 
         sed -i 's/http:\/\/localhost:8080/'$APP_SERVER_URL'/g'  $TMP_BIOREGISTER_GROOVY
