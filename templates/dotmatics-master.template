@@ -76,7 +76,7 @@ Metadata:
       pDNSName: 
         default: Dotmatics Server DNS Name
       pApplicationServerProtocol:
-        default: Use Https or Http on application server
+        default: Use HTTP or HTTPS on application server
       pEC2KeyPair:
         default: Key Pair for Servers
       pLoadBalancerType:
@@ -160,7 +160,7 @@ Parameters:
     - 'http'
     - 'https'
     Default: 'http'
-    Description: Once HTTPS is enabled, you need to manually associate a TLS certificate with the Application Load Balancer
+    Description: Once HTTPS is enabled, HTTPS will be configured in properties file of application, but you still need to manually associate a TLS certificate with the Application Load Balancer
     Type: String
   pEC2KeyPair:
     Description: Key Name for server.

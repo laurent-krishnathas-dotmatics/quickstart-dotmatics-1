@@ -59,7 +59,7 @@ Metadata:
       pCreateTLSCert:
         default: Create a TLS Certificate for the Load Balancer?
       pApplicationServerProtocol:
-        default: Use HTTPS or HTTP on application server.
+        default: Use HTTP or HTTPS on application server.
       pStandbyIPAddress:
         default: Standby Database Private IP (Only required if using Oracle Data Guard)
       pPrimaryIPAddress:
@@ -136,7 +136,7 @@ Parameters:
     - 'http'
     - 'https'
     Default: 'http'
-    Description: Once HTTPS is enabled, you need to manually associate a TLS certificate with the Application Load Balancer
+    Description: Once HTTPS is enabled, HTTPS will be configured in properties file of application, but you still need to manually associate a TLS certificate with the Application Load Balancer
     Type: String
   pStandbyIPAddress:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
