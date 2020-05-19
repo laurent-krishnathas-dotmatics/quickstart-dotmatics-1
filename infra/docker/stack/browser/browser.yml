@@ -30,6 +30,7 @@ services:
     environment:
     - JAVA_OPTS=-Duser.timezone=UTC
     labels:
+    - "app.name=browser"
     - "traefik.backend.loadbalancer.sticky=true"
     - "traefik.docker.network=bro_ft_end"
     - "traefik.enable=true"
@@ -52,6 +53,7 @@ services:
       - JAVA_OPTS=-Duser.timezone=UTC
       - SLEEP_TIME=120
     labels:
+      - "app.name=bioregister"
       - "traefik.backend.loadbalancer.sticky=true"
       - "traefik.docker.network=bro_ft_end"
       - "traefik.enable=true"
@@ -72,6 +74,7 @@ services:
     environment:
       - JAVA_OPTS=-Duser.timezone=UTC
     labels:
+      - "app.name=vortex"
       - "traefik.backend.loadbalancer.sticky=true"
       - "traefik.docker.network=bro_ft_end"
       - "traefik.enable=true"

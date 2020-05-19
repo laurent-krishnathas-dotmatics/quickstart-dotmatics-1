@@ -24,7 +24,7 @@ else
 
         if [   -f  "$EFS_BIOREGISTER_GROOVY" ]; then
             export BIOREGISTER_PASSWORD=$(cat $EFS_BIOREGISTER_GROOVY | grep password= |  cut -d"'" -f2 | xargs)
-            sed -i 's/password=\x27.*\x27/password=\x27'$BIOREGISTER_PASSWORD'\x27/g' $TMP_BIOREGISTER_GROOVY
+            sed -i 's/password=\x27.*\x27/password=\x27'$BIOREGISTER_PASSWORD'\x27\n\tpasswordEncryptionCodec=BrowserEncryptionCodec/g' $TMP_BIOREGISTER_GROOVY
             cat $TMP_BIOREGISTER_GROOVY | grep password=
         fi
 
@@ -46,12 +46,20 @@ else
             mkdir -p /efs/backup/$BACKUP_DATE/
             ls -ls  $EFS_BIOREGISTER_GROOVY || true
             cp -r $EFS_BIOREGISTER_GROOVY /efs/backup/$BACKUP_DATE/
-            ls -ls  $EFS_BIOREGISTER_GROOVY
         fi
 
+       echo "Moving bioregister.groovy from tmp to EFS ... "
+       yes | mv $TMP_BIOREGISTER_GROOVY $EFS_BIOREGISTER_GROOVY
 
-        echo "Moving bioregister.groovy from tmp to EFS ... "
-        mv $TMP_BIOREGISTER_GROOVY $EFS_BIOREGISTER_GROOVY
+
+       export BIOREGISTER_CONTAINER_ID=$( docker ps --filter label=app.name=bioregister --format {{.ID}} )
+
+       if [ ! -z "$BIOREGISTER_CONTAINER_ID" ]; then
+            docker ps
+            echo "Restarting bioregister container ..."
+            docker stop $BIOREGISTER_CONTAINER_ID
+       fi
+
 
   else
       echo "[ERROR] Bioregister installation zip file exists, but $TMP_BIOREGISTER_GROOVY doesn't exist"
