@@ -39,6 +39,9 @@ mv /project/quickstart-dotmatics/infra/infrastructor/templates/browser.service.t
 chmod 644 /etc/systemd/system/browser.service
 chown root:root /etc/systemd/system/browser.service
 
+mv /project/quickstart-dotmatics/scripts/bash/upload.sh /usr/bin/upload
+mv /project/quickstart-dotmatics/scripts/bash/download.sh /usr/bin/download
+
 
 #curl -fsSL https://goss.rocks/install | sh
 #/usr/local/bin/goss -g  /project/quickstart-dotmatics/infra/infrastructor/goss/goss-base.yaml validate --sleep 60s --retry-timeout 30s
