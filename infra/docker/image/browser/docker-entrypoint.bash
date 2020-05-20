@@ -28,10 +28,10 @@ else
 fi
 
 if [ -d "/download_from_s3/browser" ]; then
-    ls -ls /symbolic_link/browser
+    ls -ls /download_from_s3/browser
     ls -ls $CATALINA_HOME/webapps/browser
-    echo "Overwriting files from /symbolic_link/browser/ to $CATALINA_HOME/webapps/browser ... "
-    rsync -au /symbolic_link/browser/  $CATALINA_HOME/webapps/browser/
+    echo "Overwriting files from /download_from_s3/browser/ to $CATALINA_HOME/webapps/browser ... "
+    rsync -au /download_from_s3/browser/  $CATALINA_HOME/webapps/browser/
 fi
 
 SRC_FILE=$BROWSER_PROP_FILE
