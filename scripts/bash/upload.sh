@@ -40,7 +40,7 @@ while getopts ":i:vh" optname
         echo "-i argument: $OPTARG"
         ;;
       "h")
-        echo $USAGE
+        echo -e $USAGE
         exit 0;
         ;;
       "?")
