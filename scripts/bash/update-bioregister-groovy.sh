@@ -1,6 +1,7 @@
 #!/bin/sh
 set -x
 
+### This script is used by download.sh and userdata.sh
 
 export TMP_BIOREGISTER_WAR_FILE=$(ls $TMP_CONFIG_DIR/bioregister-*)
 export TMP_BIOREGISTER_WAR_COUNT=$(ls $TMP_CONFIG_DIR/bioregister-* | wc -l | xargs )
