@@ -58,16 +58,15 @@ else
             cp -r $EFS_BIOREGISTER_GROOVY /efs/backup/$BACKUP_DATE/
         fi
 
-       echo "Moving bioregister.groovy from tmp to EFS ... "
-       yes | mv $TMP_BIOREGISTER_GROOVY $EFS_BIOREGISTER_GROOVY
-
 
        export BIOREGISTER_CONTAINER_ID=$( docker ps --filter label=app.name=bioregister --format {{.ID}} )
 
        if [ ! -z "$BIOREGISTER_CONTAINER_ID" ]; then
-            docker ps
-            echo "Restarting bioregister container ..."
-            docker stop $BIOREGISTER_CONTAINER_ID
+
+            echo "Moving bioregister.groovy from tmp to bioregister container ... "
+            #yes | mv $TMP_BIOREGISTER_GROOVY $EFS_BIOREGISTER_GROOVY
+            docker cp $TMP_BIOREGISTER_GROOVY $BIOREGISTER_CONTAINER_ID:/tmp/
+            docker exec -t $BIOREGISTER_CONTAINER_ID bash -c 'cat /tmp/bioregister.groovy > /symbolic_link/bioregister.groovy'
        fi
 
 
