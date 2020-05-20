@@ -4,12 +4,12 @@ set -e
 set -u
 set -x
 
-if [ -d "/config" ]; then
-    ls -la /config
+if [ -d "/symbolic_link" ]; then
+    ls -la /symbolic_link
 fi
 mkdir -p $CATALINA_HOME/webapps/vortexweb
-VORTEX_ZIP_FILE=$(ls /install/vortexweb*.zip )
-VORTEX_ZIP_COUNT=$(ls /install/vortexweb*.zip | wc -l | xargs )
+VORTEX_ZIP_FILE=$(ls /download_from_s3/vortexweb*.zip )
+VORTEX_ZIP_COUNT=$(ls /download_from_s3/vortexweb*.zip | wc -l | xargs )
 
 if [ "$VORTEX_ZIP_COUNT" -gt 1 ]; then
     echo "[ERROR] Too many vortex installation zip files."

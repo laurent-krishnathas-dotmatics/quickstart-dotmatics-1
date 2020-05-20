@@ -33,8 +33,8 @@ function stack_deploy_browser(){
 function set_up_configuration(){
 
     export BIOREGISTER_GROOVY=/efs/data/bioregister.groovy
-    export BIOREGISTER_ZIP_COUNT=$(ls /efs/tmp/install/bioregister-* | wc -l | xargs )
-    export VORTEX_ZIP_COUNT=$(ls /efs/tmp/install/vortexweb* | wc -l | xargs )
+    export BIOREGISTER_ZIP_COUNT=$(ls /efs/tmp/download_from_s3/bioregister-* | wc -l | xargs )
+    export VORTEX_ZIP_COUNT=$(ls /efs/tmp/download_from_s3/vortexweb* | wc -l | xargs )
 
     export MEM_80_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*80/100"m"}' )
     export MEM_70_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*70/100"m"}' )

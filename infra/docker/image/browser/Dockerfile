@@ -2,8 +2,8 @@ FROM tomcat:dotmatics-1.0
 
 WORKDIR $CATALINA_HOME
 
-ENV BROWSER_PROP_FILE /config/browser.properties
-ENV DOTMATICS_LICENSE_FILE /config/dotmatics.license.txt
+ENV BROWSER_PROP_FILE /symbolic_link/browser.properties
+ENV DOTMATICS_LICENSE_FILE /symbolic_link/dotmatics.license.txt
 
 HEALTHCHECK --interval=1s --timeout=6s CMD goss -g /goss/healthcheck.yaml validate
 

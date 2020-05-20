@@ -12,9 +12,9 @@ services:
   browser:
     image: browser:dotmatics-1.0
     volumes:
-      - /efs/tmp/install:/install:z
-      - /efs/data/browser/WEB-INF/browser.properties:/config/browser.properties:z
-      - /efs/data/browser/WEB-INF/dotmatics.license.txt:/config/dotmatics.license.txt:z
+      - /efs/tmp/download_from_s3:/download_from_s3:z
+      - /efs/data/browser/WEB-INF/browser.properties:/symbolic_link/browser.properties:z
+      - /efs/data/browser/WEB-INF/dotmatics.license.txt:/symbolic_link/dotmatics.license.txt:z
       - /efs/logs/browser:/usr/local/tomcat/logs:z
       - /efs/data/browser/tempfiles:/usr/local/tomcat/webapps/browser/tempfiles:z
       - /efs/data/browser/pdf:/usr/local/tomcat/webapps/browser/pdf:z
@@ -29,11 +29,11 @@ services:
   bioregister:
     image: bioregister:dotmatics-1.0
     volumes:
-      - /efs/tmp/install:/install:z
-      - /efs/data/bioregister.groovy:/config/bioregister.groovy:z
+      - /efs/tmp/download_from_s3:/download_from_s3:z
+      - /efs/data/bioregister.groovy:/symbolic_link/bioregister.groovy:z
       - /efs/data/bioregister/c2c_attachments:/c2c_attachments:z
-      - /efs/data/browser/WEB-INF/browser.properties:/config/browser.properties:z
-      - /efs/data/browser/WEB-INF/dotmatics.license.txt:/config/dotmatics.license.txt:z
+      - /efs/data/browser/WEB-INF/browser.properties:/symbolic_link/browser.properties:z
+      - /efs/data/browser/WEB-INF/dotmatics.license.txt:/symbolic_link/dotmatics.license.txt:z
       - /efs/logs/bioregister:/usr/local/tomcat/logs:z
     deploy:
       resources:
@@ -44,8 +44,8 @@ services:
   vortex:
     image: vortex:dotmatics-1.0
     volumes:
-      - /efs/tmp/install:/install:z
-      - /efs/data/browser/WEB-INF/dotmatics.license.txt:/config/dotmatics.license.txt:z
+      - /efs/tmp/download_from_s3:/download_from_s3:z
+      - /efs/data/browser/WEB-INF/dotmatics.license.txt:/symbolic_link/dotmatics.license.txt:z
     deploy:
       resources:
         limits:

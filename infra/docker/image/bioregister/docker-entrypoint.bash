@@ -7,8 +7,8 @@ set -u
 set -x
 
 
-if [ -d "/config" ]; then
-    ls -la /config
+if [ -d "/symbolic_link" ]; then
+    ls -la /symbolic_link
 fi
 
 #  Waiting for browser
@@ -22,8 +22,8 @@ else
     date
 fi
 
-BIOREGISTER_WAR_FILE=$(ls /install/bioregister*.war)
-BIOREGISTER_WAR_COUNT=$(ls /install/bioregister*.war | wc -l | xargs )
+BIOREGISTER_WAR_FILE=$(ls /download_from_s3/bioregister*.war)
+BIOREGISTER_WAR_COUNT=$(ls /download_from_s3/bioregister*.war | wc -l | xargs )
 
 if [ "$BIOREGISTER_WAR_COUNT" -gt 1 ]; then
     echo "[ERROR] Too many bioregister installation war files."

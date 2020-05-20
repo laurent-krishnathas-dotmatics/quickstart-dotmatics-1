@@ -6,12 +6,12 @@ set -e
 set -u
 set -x
 
-if [ -d "/config" ]; then
-    ls -la /config
+if [ -d "/symbolic_link" ]; then
+    ls -la /symbolic_link
 fi
 mkdir -p $CATALINA_HOME/webapps/browser
-BROWSER_ZIP_FILE=$(ls /install/browser-*.zip )
-BROWSER_ZIP_COUNT=$(ls /install/browser-*.zip | wc -l | xargs )
+BROWSER_ZIP_FILE=$(ls /download_from_s3/browser-*.zip )
+BROWSER_ZIP_COUNT=$(ls /download_from_s3/browser-*.zip | wc -l | xargs )
 
 if [ "$BROWSER_ZIP_COUNT" -gt 1 ]; then
     echo "[ERROR] Too many browser installation zip files."
@@ -27,11 +27,11 @@ else
     ls -ls $CATALINA_HOME/webapps/browser
 fi
 
-if [ -d "/config/browser" ]; then
-    ls -ls /config/browser
+if [ -d "/download_from_s3/browser" ]; then
+    ls -ls /symbolic_link/browser
     ls -ls $CATALINA_HOME/webapps/browser
-    echo "Overwriting files from /config/browser/ to $CATALINA_HOME/webapps/browser ... "
-    rsync -au /config/browser/  $CATALINA_HOME/webapps/browser/
+    echo "Overwriting files from /symbolic_link/browser/ to $CATALINA_HOME/webapps/browser ... "
+    rsync -au /symbolic_link/browser/  $CATALINA_HOME/webapps/browser/
 fi
 
 SRC_FILE=$BROWSER_PROP_FILE
