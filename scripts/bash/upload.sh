@@ -139,18 +139,20 @@ check_env_configuration
 #echo param1=$param1
 
 
-backup
 
 
 echo "Uploading files to AWS S3 ..."
 
 if [ "browser" = $param1 ]; then
+    backup
     upload_browser_properties
 
 elif [ "bioregister" = $param1 ]; then
+    backup
     upload_bioregister_groovy
 
 elif [ "all" = $param1 ]; then
+    backup
     upload_browser_properties
     upload_bioregister_groovy
 else
