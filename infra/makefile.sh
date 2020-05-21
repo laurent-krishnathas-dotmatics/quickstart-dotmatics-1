@@ -69,8 +69,6 @@ function set_up_configuration(){
     export CPU_05_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * ( 5/100) } ' )
     export CPU_00_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * ( 0/100) } ' )
 
-grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}'
-
     if [ -f "BIOREGISTER_GROOVY" ] || [ "$BIOREGISTER_ZIP_COUNT" -eq 1  ] ; then
         export BIOREGISTER_ENABLE=true
     else
