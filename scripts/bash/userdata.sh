@@ -198,8 +198,7 @@ if [  -f "$EFS_BROWSER_PROPERTIES" ]; then
     echo "backup browser.properties done at $(date)"
 fi
 
-/project/quickstart-dotmatics/scripts/bash/update-bioregister-groovy.sh  BACKUP_DATE=$BACKUP_DATE
-
+BACKUP_DATE=$BACKUP_DATE /project/quickstart-dotmatics/scripts/bash/update-bioregister-groovy.sh debug
 
 echo "copy browser properties to efs"
 yes | cp $TMP_BROWSER_PROPERTIES $EFS_BROWSER_PROPERTIES

@@ -12,8 +12,8 @@ SCRIPT_UPDATE_BIOREGISTER_GROOVY=/project/quickstart-dotmatics/scripts/bash/upda
 USAGE=$(cat  << EOF
 Usage:	download [SERVICES] \n\n
 
-download bioregister.groovy and update it to running container
-
+It is going to download bioregister.groovy and apply it to running container. \n
+This script will not download and redeploy bioregister war file. \n\n
 Servics: \n
 \tbioregister   \t    download bioregister.groovy from S3 to running container \n
 
@@ -75,7 +75,7 @@ touch $LOCK_FILE
 # --- Function --------------------------------------------------------
 function download_bioregister_groovy(){
 
-    echo "downloading bioregister groovy"
+    echo "Update Bioregister Groovy:"
     $SCRIPT_UPDATE_BIOREGISTER_GROOVY
 }
 
