@@ -14,15 +14,15 @@ function stack_deploy_browser(){
 
 
     if [ "$BIOREGISTER_ENABLE" = "true" ] &&  [ "$VORTEX_ENABLE" = "true" ]  ; then
-        BROWSER_LIMIT_MEM=$MEM_50_PCT  BIOREGISTER_LIMIT_MEM=$MEM_20_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
+        BROWSER_LIMIT_MEM=$MEM_35_PCT  BIOREGISTER_LIMIT_MEM=$MEM_35_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
 
     elif [ "$BIOREGISTER_ENABLE" = "true" ] &&  [ "$VORTEX_ENABLE" = "false" ]  ; then
-        BROWSER_LIMIT_MEM=$MEM_50_PCT  BIOREGISTER_LIMIT_MEM=$MEM_30_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
+        BROWSER_LIMIT_MEM=$MEM_50_PCT  BIOREGISTER_LIMIT_MEM=$MEM_30_PCT  VORTEX_LIMIT_MEM=$MEM_00_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
 
     elif [ "$BIOREGISTER_ENABLE" = "false" ] &&  [ "$VORTEX_ENABLE" = "true" ]  ; then
-        BROWSER_LIMIT_MEM=$MEM_80_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_00_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
-    else
         BROWSER_LIMIT_MEM=$MEM_70_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
+    else
+        BROWSER_LIMIT_MEM=$MEM_80_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_00_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
         make ENV=$ENV scale_down_vortex
         make ENV=$ENV scale_down_bioregister
     fi
