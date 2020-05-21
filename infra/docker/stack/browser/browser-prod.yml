@@ -9,6 +9,12 @@ services:
         limits:
           memory: ${TRAEFIK_LIMIT_MEM}
 
+  redirect:
+    deploy:
+      resources:
+        limits:
+          memory: ${REDIRECT_LIMIT_MEM}
+
   browser:
     image: browser:dotmatics-1.0
     volumes:
