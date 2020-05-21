@@ -1,11 +1,13 @@
 #!/bin/sh
-set -x
+
+if [ ! -z "$1" ] &&  [ "$1" = "debug" ] ; then
+    set -x
+    set -e
+fi
 
 ### This script is used by download.sh and userdata.sh
-
 export TMP_BIOREGISTER_WAR_FILE=$(ls $TMP_CONFIG_DIR/bioregister-*)
 export TMP_BIOREGISTER_WAR_COUNT=$(ls $TMP_CONFIG_DIR/bioregister-* | wc -l | xargs )
-echo "TMP_BIOREGISTER_WAR_FILE=$TMP_BIOREGISTER_WAR_FILE"
 
 
 aws s3 cp s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/bioregister.groovy   $TMP_CONFIG_DIR/  || true
@@ -19,18 +21,16 @@ elif [ "$TMP_BIOREGISTER_WAR_COUNT" -gt 1 ] ; then
 
 else
   if [  -f "$TMP_BIOREGISTER_GROOVY" ]; then
-        echo "$TMP_BIOREGISTER_WAR_FILE and $TMP_BIOREGISTER_GROOVY both exist. "
 
-        echo "bioregister.groovy exists,then update ServerURL and oracle host."
+        echo -e "\nFound war file and new bioregister.groovy, updating serverURL, DB url and password ..."
 
         if [   -f  "$EFS_BIOREGISTER_GROOVY" ]; then
             export BIOREGISTER_PASSWORD=$(cat $EFS_BIOREGISTER_GROOVY | grep password= |  cut -d"'" -f2 | xargs)
             sed -i 's/password=\x27.*\x27/password=\x27'$BIOREGISTER_PASSWORD'\x27/g' $TMP_BIOREGISTER_GROOVY
-            cat $TMP_BIOREGISTER_GROOVY | grep password=
 
             export ENCRYPT_CODE=$(cat $TMP_BIOREGISTER_GROOVY | grep passwordEncryptionCodec=)
             if [ -z "$ENCRYPT_CODE" ]; then
-                echo "ENCRYPT_CODE is empty."
+                echo "Not found passwordEncryptionCodec in new bioregister.groovy, attaching it to bioregiser.groovy"
                 sed -i '/password=\x27.*\x27/ a \\tpasswordEncryptionCodec=BrowserEncryptionCodec' $TMP_BIOREGISTER_GROOVY
             fi
 
@@ -42,34 +42,34 @@ else
         sed -i 's/localhost/'$PRIVATE_DNS_NAME'/g'  $TMP_BIOREGISTER_GROOVY
         sed -i 's/c:\\\\c2c_attachments/\/c2c_attachments/g' $TMP_BIOREGISTER_GROOVY
         sed -i 's/XE/'$P_DATABASE_NAME'/g' $TMP_BIOREGISTER_GROOVY
-        echo "updating browser.properties done at $(date)"
-
 
         if [ -z "$BACKUP_DATE" ]; then
-            echo "BACKUP_DATE env is a empty string"
             export BACKUP_DATE=$(date +'%Y-%m%d-%Hh%M')
-        else
-            echo "BACKUP_DATE has the value: $BACKUP_DATE"
         fi
 
         if [  -f "$EFS_BIOREGISTER_GROOVY" ]; then
             mkdir -p /efs/backup/$BACKUP_DATE/
-            ls -ls  $EFS_BIOREGISTER_GROOVY || true
             cp -r $EFS_BIOREGISTER_GROOVY /efs/backup/$BACKUP_DATE/
         fi
-
 
        export BIOREGISTER_CONTAINER_ID=$( docker ps --filter label=app.name=bioregister --format {{.ID}} )
 
        if [ ! -z "$BIOREGISTER_CONTAINER_ID" ]; then
-            echo "Found running bioregister running"
-            echo "Moving bioregister.groovy from tmp into bioregister container ... "
+            echo "Found running bioregister container."
+            echo "Moving new bioregister.groovy to bioregister container ... "
             docker cp $TMP_BIOREGISTER_GROOVY $BIOREGISTER_CONTAINER_ID:/tmp/
             docker exec -t $BIOREGISTER_CONTAINER_ID bash -c 'cat /tmp/bioregister.groovy > /symbolic_link/bioregister.groovy'
+
+            echo -e "\n[Result]"
+            echo "bioreigster.groovy has been updated."
+            echo "Previous bioregister.groovy: /efs/backup/$BACKUP_DATE/bioregister.groovy"
+            echo "New bioregister.groovy: $EFS_BIOREGISTER_GROOVY"
        else
             echo "There is no running bioregister container."
             yes | mv $TMP_BIOREGISTER_GROOVY $EFS_BIOREGISTER_GROOVY
        fi
+
+
 
 
   else
