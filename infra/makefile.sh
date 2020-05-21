@@ -14,15 +14,15 @@ function stack_deploy_browser(){
 
 
     if [ "$BIOREGISTER_ENABLE" = "true" ] &&  [ "$VORTEX_ENABLE" = "true" ]  ; then
-        BROWSER_LIMIT_MEM=$MEM_35_PCT  BIOREGISTER_LIMIT_MEM=$MEM_35_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
+        BROWSER_LIMIT_MEM=$MEM_35_PCT  BIOREGISTER_LIMIT_MEM=$MEM_35_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_05_PCT   REDIRECT_LIMIT_MEM=$MEM_05_PCT    STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
 
     elif [ "$BIOREGISTER_ENABLE" = "true" ] &&  [ "$VORTEX_ENABLE" = "false" ]  ; then
-        BROWSER_LIMIT_MEM=$MEM_50_PCT  BIOREGISTER_LIMIT_MEM=$MEM_30_PCT  VORTEX_LIMIT_MEM=$MEM_00_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
+        BROWSER_LIMIT_MEM=$MEM_50_PCT  BIOREGISTER_LIMIT_MEM=$MEM_30_PCT  VORTEX_LIMIT_MEM=$MEM_00_PCT  TRAEFIK_LIMIT_MEM=$MEM_05_PCT   REDIRECT_LIMIT_MEM=$MEM_05_PCT    STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
 
     elif [ "$BIOREGISTER_ENABLE" = "false" ] &&  [ "$VORTEX_ENABLE" = "true" ]  ; then
-        BROWSER_LIMIT_MEM=$MEM_70_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
+        BROWSER_LIMIT_MEM=$MEM_70_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_10_PCT  TRAEFIK_LIMIT_MEM=$MEM_05_PCT   REDIRECT_LIMIT_MEM=$MEM_05_PCT    STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
     else
-        BROWSER_LIMIT_MEM=$MEM_80_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_00_PCT  TRAEFIK_LIMIT_MEM=$MEM_10_PCT	STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
+        BROWSER_LIMIT_MEM=$MEM_80_PCT  BIOREGISTER_LIMIT_MEM=$MEM_00_PCT  VORTEX_LIMIT_MEM=$MEM_00_PCT  TRAEFIK_LIMIT_MEM=$MEM_05_PCT   REDIRECT_LIMIT_MEM=$MEM_05_PCT    STACK_NAME=$BRO_STACK_NAME ENV=$ENV docker stack deploy --with-registry-auth  -c docker/stack/browser/browser.yml -c docker/stack/browser/browser-$ENV.yml $BRO_STACK_NAME
         make ENV=$ENV scale_down_vortex
         make ENV=$ENV scale_down_bioregister
     fi
@@ -47,11 +47,19 @@ function set_up_configuration(){
     export MEM_10_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*10/100"m"}' )
     export MEM_00_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*0/100"m"}' )
 
-    echo "$MEM_80_PCT" >  $PWD/target/mem80pct
-    echo "$MEM_40_PCT" >  $PWD/target/mem40pct
-    echo "$MEM_10_PCT" >  $PWD/target/mem10pct
 
-    chown -R ec2-user:ec2-user $PWD/target
+    export CPU_80_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (80/100) } ' )
+    export CPU_70_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (70/100) } ' )
+    export CPU_60_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (60/100) } ' )
+    export CPU_50_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (50/100) } ' )
+    export CPU_40_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (40/100) } ' )
+    export CPU_35_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (35/100) } ' )
+    export CPU_30_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (30/100) } ' )
+    export CPU_20_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (20/100) } ' )
+    export CPU_10_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * (10/100) } ' )
+    export CPU_00_PCT=$(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{ print $4 * ( 0/100) } ' )
+
+grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}'
 
     if [ -f "BIOREGISTER_GROOVY" ] || [ "$BIOREGISTER_ZIP_COUNT" -eq 1  ] ; then
         export BIOREGISTER_ENABLE=true
