@@ -41,6 +41,7 @@ function set_up_configuration(){
     export MEM_60_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*60/100"m"}' )
     export MEM_50_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*50/100"m"}' )
     export MEM_40_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*40/100"m"}' )
+    export MEM_35_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*35/100"m"}' )
     export MEM_30_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*30/100"m"}' )
     export MEM_20_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*20/100"m"}' )
     export MEM_10_PCT=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024*10/100"m"}' )
