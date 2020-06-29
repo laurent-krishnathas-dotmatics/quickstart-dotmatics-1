@@ -79,6 +79,26 @@ function download_bioregister_groovy(){
     $SCRIPT_UPDATE_BIOREGISTER_GROOVY
 }
 
+function download_sso_files(){
+    echo "Downloading sso files from S3 to browser container ..."
+    aws s3 ls s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/browser/WEB-INF/
+    aws s3 sync  s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/browser/WEB-INF/ /efs/data/browser/WEB-INF/ --exclude "*.*" --include "sso.*"
+    export BROWSER_CONTAINER_ID=$( docker ps --filter label=app.name=browser --format {{.ID}} )
+    echo "BROWSER_CONTAINER_ID=$BROWSER_CONTAINER_ID"
+    FILES=/efs/data/browser/WEB-INF/sso.*
+
+    for f in $FILES
+    do
+      echo "Processing $f file..."
+      docker cp $f $BROWSER_CONTAINER_ID:/usr/local/tomcat/webapps/browser/WEB-INF/
+      docker exec -t $BROWSER_CONTAINER_ID  chown -R 1000:1000 /usr/local/tomcat/webapps/browser/WEB-INF/
+    done
+
+    echo "All files in browser/WEB-INF/"
+    docker exec -t $BROWSER_CONTAINER_ID  ls -lsa /usr/local/tomcat/webapps/browser/WEB-INF/
+    echo -e "\nAll sso files have been copied from S3 to browser/WEB-INF/"
+}
+
 function check_env_configuration(){
 
 if [ -z "$P_INSTALL_BUCKET_NAME" ]; then
@@ -129,6 +149,9 @@ check_env_configuration
 
 if [ "bioregister" = $param1 ]; then
    download_bioregister_groovy
+
+elif [ "sso" = $param1 ]; then
+    download_sso_files
 
 else
     echo "invalid service '$param1'"
