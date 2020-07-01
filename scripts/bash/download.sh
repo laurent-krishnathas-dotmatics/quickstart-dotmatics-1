@@ -108,7 +108,7 @@ function download_image_files(){
     aws s3 sync  s3://$P_INSTALL_BUCKET_NAME/$P_INSTALL_BUCKET_PREFIX/browser/images/ $EFS_CUSTOMED_BROWSER_DIR/images/  --include "*.*"
     chown -R 1000:1000 $EFS_CUSTOMED_BROWSER_DIR/images/
     export BROWSER_CONTAINER_ID=$( docker ps --filter label=app.name=browser --format {{.ID}} )
-    FILES=$EFS_CUSTOMED_BROWSER_DIR/images/images/*
+    FILES=$EFS_CUSTOMED_BROWSER_DIR/images/*
 
     for f in $FILES
     do
